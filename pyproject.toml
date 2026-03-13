@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "infrarely"
+version = "0.1.0"
+description = "InfraRely — Reliable Agent Infrastructure. Production-grade agent framework with zero boilerplate."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+keywords = ["agent", "ai", "llm", "sdk", "multi-agent", "knowledge", "workflow", "infrastructure", "reliable"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Typing :: Typed",
+]
+
+# Zero required dependencies — stdlib only for basic use
+dependencies = []
+
+[project.optional-dependencies]
+openai = ["openai>=1.0"]
+anthropic = ["anthropic>=0.20"]
+groq = ["groq>=0.4"]
+google = ["google-generativeai>=0.4"]
+ollama = ["ollama>=0.1"]
+all-providers = [
+    "openai>=1.0",
+    "anthropic>=0.20",
+    "groq>=0.4",
+    "google-generativeai>=0.4",
+    "ollama>=0.1",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.3",
+    "mypy>=1.8",
+]
+
+[project.urls]
+Homepage = "https://github.com/infrarely/infrarely"
+Documentation = "https://infrarely.dev"
+Repository = "https://github.com/infrarely/infrarely"
+Issues = "https://github.com/infrarely/infrarely/issues"
+
+[project.scripts]
+infrarely = "infrarely.cli.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["infrarely*"]
+
+[tool.setuptools.package-data]
+infrarely = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
