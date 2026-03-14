@@ -26,10 +26,9 @@ from typing import Any, Dict, List, Optional
 
 import infrarely.core.app_config as config
 from infrarely.observability import logger
+from infrarely.runtime.paths import TRACE_DIR
 
-_TRACE_DIR = getattr(config, "TRACE_DIR", None) or os.path.join(
-    config.LOG_DIR, "traces"
-)
+_TRACE_DIR = str(TRACE_DIR)
 os.makedirs(_TRACE_DIR, exist_ok=True)
 
 # ── Trace retention policy ────────────────────────────────────────────────────

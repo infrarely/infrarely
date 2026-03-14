@@ -1,5 +1,5 @@
 """
-aos/config.py — SDK Configuration System
+infrarely/config.py — SDK Configuration System
 ═══════════════════════════════════════════════════════════════════════════════
 Philosophy 4: Zero Surprise Defaults.
   Every default is the safest, most correct choice.
@@ -18,6 +18,15 @@ import threading
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
+from infrarely.runtime.paths import (
+    LOG_DIR,
+    MEMORY_DB,
+    PACKAGES_DIR,
+    STATE_DB,
+    TRACES_DB,
+    VERSIONS_DIR,
+)
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DEFAULT VALUES — safest, most correct choice for every setting
@@ -31,13 +40,15 @@ _DEFAULTS = {
     "llm_temperature": 0.3,
     "llm_max_tokens": 512,
     "llm_base_url": None,  # for ollama / custom endpoints
+    "llm": None,  # provider instance loaded by infrarely.llm.registry
+    "llm_init_error": "",  # last provider init error message
     # ── Knowledge Layer ───────────────────────────────────────────────────────
     "knowledge_backend": "memory",  # "memory" | "chromadb" | "pinecone"
     "knowledge_threshold": 0.85,  # confidence to bypass LLM
     "knowledge_refresh_hours": 24,
     # ── State Machine ─────────────────────────────────────────────────────────
     "state_backend": "sqlite",  # "sqlite" | "redis" | "memory"
-    "state_db_path": "./aos_state.db",
+    "state_db_path": str(STATE_DB),
     # ── Planning Engine ───────────────────────────────────────────────────────
     "max_replan_attempts": 3,
     "token_budget": 10_000,
@@ -48,14 +59,14 @@ _DEFAULTS = {
     # ── Memory ────────────────────────────────────────────────────────────────
     "memory_enabled": True,
     "memory_backend": "sqlite",  # "sqlite" | "memory"
-    "memory_db_path": "./aos_memory.db",
+    "memory_db_path": str(MEMORY_DB),
     "working_memory_window": 20,
     # ── Observability ─────────────────────────────────────────────────────────
     "log_level": "INFO",  # "DEBUG" | "INFO" | "WARNING" | "ERROR"
-    "log_dir": "./logs",  # Path for log files (set None to disable file logs)
+    "log_dir": str(LOG_DIR),  # Path for log files (set None to disable file logs)
     "log_file_enabled": True,  # Enable/disable file-based logging
     "trace_storage": "sqlite",  # "sqlite" | "memory" | "none"
-    "trace_db_path": "./aos_traces.db",
+    "trace_db_path": str(TRACES_DB),
     # ── Multi-agent ───────────────────────────────────────────────────────────
     "max_agents": 50,
     "message_bus_capacity": 1000,
@@ -79,7 +90,9 @@ _DEFAULTS = {
     "tool_validation_enabled": True,
     "tool_validation_coerce": True,  # attempt safe type coercion
     # ── Versioning ────────────────────────────────────────────────────────────
-    "versions_dir": "./.aos_versions",  # ── Token Tracking ────────────────────────────────────────────────────
+    "versions_dir": str(
+        VERSIONS_DIR
+    ),  # ── Token Tracking ────────────────────────────────────────────────────
     "token_tracking_enabled": True,
     # ── Sandbox ───────────────────────────────────────────────────────────
     "sandbox_max_memory_mb": 512,
@@ -123,7 +136,7 @@ _DEFAULTS = {
     "acp_auth_token": "",
     # ── Agent Marketplace ──────────────────────────────────────────────────
     "marketplace_enabled": True,
-    "marketplace_install_dir": "./.aos_packages",
+    "marketplace_install_dir": str(PACKAGES_DIR),
     "marketplace_registry_url": "",  # remote registry URL (empty = local only)
     "marketplace_auto_update": False,
     # ── Natural Language Agent Configuration ───────────────────────────────
@@ -259,7 +272,9 @@ def configure(**kwargs) -> None:
             # Warn but don't crash — forward compatibility
             import warnings
 
-            warnings.warn(f"Unknown InfraRely config key: '{key}'. Ignoring.", stacklevel=2)
+            warnings.warn(
+                f"Unknown InfraRely config key: '{key}'. Ignoring.", stacklevel=2
+            )
             continue
         resolved[canonical] = value
 
@@ -284,6 +299,27 @@ def configure(**kwargs) -> None:
         if env_name:
             cfg.set("api_key", os.getenv(env_name, ""))
 
+    # ── Initialize provider abstraction (best effort, non-fatal) ─────────────
+    provider = cfg.get("llm_provider", "openai")
+    if provider in {"openai", "anthropic", "groq", "gemini"}:
+        try:
+            from infrarely.llm.registry import load_provider
+
+            llm = load_provider(
+                provider,
+                cfg.get("api_key", ""),
+                cfg.get("llm_model"),
+                base_url=cfg.get("llm_base_url"),
+            )
+            cfg.set("llm", llm)
+            cfg.set("llm_init_error", "")
+        except Exception as exc:
+            cfg.set("llm", None)
+            cfg.set("llm_init_error", str(exc))
+    else:
+        cfg.set("llm", None)
+        cfg.set("llm_init_error", "")
+
     cfg.mark_configured()
 
     # ── Enable file logging ──────────────────────────────────────────────────
@@ -293,7 +329,7 @@ def configure(**kwargs) -> None:
         logger = get_logger()
         logger.set_level(cfg.get("log_level", "INFO"))
         if cfg.get("log_file_enabled", True):
-            log_dir = cfg.get("log_dir", "./logs")
+            log_dir = cfg.get("log_dir", str(LOG_DIR))
             if log_dir:
                 logger.enable_file_logging(log_dir)
     except Exception:
@@ -307,7 +343,18 @@ def _ensure_configured() -> _SDKConfig:
     """
     cfg = get_config()
     if not cfg.configured:
-        # Auto-configure from environment
-        provider = os.getenv("INFRARELY_LLM_PROVIDER", "openai")
+        # Auto-configure from environment (provider hint first, then key detection)
+        provider = os.getenv("INFRARELY_LLM_PROVIDER", "").strip().lower()
+        if not provider:
+            if os.getenv("OPENAI_API_KEY"):
+                provider = "openai"
+            elif os.getenv("ANTHROPIC_API_KEY"):
+                provider = "anthropic"
+            elif os.getenv("GROQ_API_KEY"):
+                provider = "groq"
+            elif os.getenv("GEMINI_API_KEY"):
+                provider = "gemini"
+            else:
+                provider = "openai"
         configure(llm_provider=provider)
     return cfg

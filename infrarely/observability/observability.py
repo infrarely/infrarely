@@ -1,5 +1,5 @@
 """
-aos/observability.py — Traces, Metrics, Health
+infrarely/observability.py — Traces, Metrics, Health
 ═══════════════════════════════════════════════════════════════════════════════
 Philosophy 5: Observable by default. Zero setup required.
 
@@ -27,6 +27,8 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+
+from infrarely.runtime.paths import LOG_DIR, LOG_FILE, TRACES_DB
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -146,7 +148,7 @@ class ExecutionTrace:
 class TraceStore:
     """Stores and retrieves execution traces."""
 
-    def __init__(self, db_path: str = "./aos_traces.db"):
+    def __init__(self, db_path: str = str(TRACES_DB)):
         self._db_path = db_path
         os.makedirs(
             os.path.dirname(db_path) if os.path.dirname(db_path) else ".", exist_ok=True
@@ -472,7 +474,7 @@ class MetricsCollector:
             lines = []
             for key, val in data.items():
                 if isinstance(val, (int, float)):
-                    lines.append(f"aos_{key} {val}")
+                    lines.append(f"infrarely_{key} {val}")
             return "\n".join(lines)
         return data
 
@@ -497,11 +499,11 @@ class MetricsCollector:
 class _Logger:
     """Structured logger with in-memory buffer AND persistent file logging.
 
-    Logs are written to:
-      logs/aos.log          — main log (rotated at 5 MB, 3 backups)
-      logs/errors/error.log — ERROR-only log (rotated at 2 MB, 3 backups)
+        Logs are written to:
+            ~/.infrarely/logs/infrarely.log          — main log (rotated at 5 MB, 3 backups)
+            ~/.infrarely/logs/errors/error.log       — ERROR-only log (rotated at 2 MB, 3 backups)
 
-    The log directory defaults to ``./logs`` relative to the working directory.
+        The log directory defaults to ``~/.infrarely/logs``.
     Override with ``infrarely.configure(log_dir="/custom/path")``.
     """
 
@@ -532,15 +534,15 @@ class _Logger:
         """Enable persistent file logging with rotation.
 
         Args:
-            log_dir: Directory for log files. Defaults to ``./logs``.
+            log_dir: Directory for log files. Defaults to ``~/.infrarely/logs``.
         """
         with self._lock:
-            self._log_dir = log_dir or os.path.join(os.getcwd(), "logs")
+            self._log_dir = log_dir or str(LOG_DIR)
             os.makedirs(self._log_dir, exist_ok=True)
             error_dir = os.path.join(self._log_dir, "errors")
             os.makedirs(error_dir, exist_ok=True)
 
-            main_path = os.path.join(self._log_dir, "aos.log")
+            main_path = os.path.join(self._log_dir, os.path.basename(str(LOG_FILE)))
             error_path = os.path.join(error_dir, "error.log")
 
             self._file_handle = open(main_path, "a", encoding="utf-8")
@@ -553,7 +555,7 @@ class _Logger:
             if handle and not handle.closed and handle.tell() > max_bytes:
                 handle.flush()
                 handle.close()
-                # Rotate: aos.log.3 → delete, .2 → .3, .1 → .2, current → .1
+                # Rotate: infrarely.log.3 → delete, .2 → .3, .1 → .2, current → .1
                 for i in range(self._backup_count, 0, -1):
                     src = f"{path}.{i}" if i > 1 else path
                     dst = f"{path}.{i}"
@@ -581,7 +583,7 @@ class _Logger:
             if self._file_handle and not self._file_handle.closed:
                 self._file_handle.write(line)
                 self._file_handle.flush()
-                main_path = os.path.join(self._log_dir, "aos.log")
+                main_path = os.path.join(self._log_dir, os.path.basename(str(LOG_FILE)))
                 self._file_handle = self._rotate_if_needed(
                     self._file_handle, main_path, self._max_file_bytes
                 )

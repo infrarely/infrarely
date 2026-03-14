@@ -1,17 +1,17 @@
 """
-aos/benchmark.py — Agent Performance Benchmarking
+infrarely/benchmark.py — Agent Performance Benchmarking
 ═══════════════════════════════════════════════════════════════════════════════
-A public benchmark suite that proves AOS performance on standard tasks.
+A public benchmark suite that proves InfraRely performance on standard tasks.
 
     aos benchmark --vs langchain --tasks standard-suite-v1
 
 Produces comparison tables:
 
     ╔═══════════════════════╦══════════╦════════════╦══════════════╗
-    ║ Metric                ║ AOS      ║ LangChain  ║ Winner       ║
+    ║ Metric                ║ InfraRely      ║ LangChain  ║ Winner       ║
     ╠═══════════════════════╬══════════╬════════════╬══════════════╣
-    ║ Task completion       ║ 98.3%    ║ 91.2%      ║ ✓ AOS (+7.1) ║
-    ║ Hallucination rate    ║ 2.1%     ║ 8.4%       ║ ✓ AOS (−6.3) ║
+    ║ Task completion       ║ 98.3%    ║ 91.2%      ║ ✓ InfraRely (+7.1) ║
+    ║ Hallucination rate    ║ 2.1%     ║ 8.4%       ║ ✓ InfraRely (−6.3) ║
     ╚═══════════════════════╩══════════╩════════════╩══════════════╝
 
 Zero external dependencies — pure stdlib benchmarking.
@@ -23,7 +23,7 @@ Architecture:
   TaskResult          — Result of running a single task
   BenchmarkMetrics    — Aggregated metrics from a benchmark run
   FrameworkBaseline   — Known performance baselines for other frameworks
-  BenchmarkRunner     — Executes suite against AOS
+  BenchmarkRunner     — Executes suite against InfraRely
   BenchmarkReport     — Generates comparison tables
   BenchmarkRegistry   — Registry of built-in + custom suites
 """
@@ -554,7 +554,7 @@ _STANDARD_SUITE_V1_TASKS = [
         description="Search for data then summarize the results",
         category="tool_use",
         difficulty="hard",
-        input_data={"tools": ["search", "summarize"], "query": "AOS performance"},
+        input_data={"tools": ["search", "summarize"], "query": "InfraRely performance"},
         expected_output=None,
         weight=2.0,
     ),
@@ -730,14 +730,14 @@ def get_standard_suite_v1() -> BenchmarkSuite:
     return BenchmarkSuite(
         name="standard-suite-v1",
         version="1.0",
-        description="Standard AOS benchmark suite with 20 tasks across 8 categories",
+        description="Standard InfraRely benchmark suite with 20 tasks across 8 categories",
         tasks=list(_STANDARD_SUITE_V1_TASKS),
-        metadata={"created": "2024-01-01", "author": "AOS Team"},
+        metadata={"created": "2024-01-01", "author": "InfraRely Team"},
     )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# BENCHMARK RUNNER — executes a suite against AOS
+# BENCHMARK RUNNER — executes a suite against InfraRely
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
@@ -758,13 +758,13 @@ class BenchmarkRunner:
         *,
         agent: Optional[Any] = None,
         task_executor: Optional[Callable[[BenchmarkTask], TaskResult]] = None,
-        framework_name: str = "AOS",
+        framework_name: str = "InfraRely",
     ) -> BenchmarkMetrics:
         """
         Run a benchmark suite.
 
-        Either provide an AOS agent or a custom task_executor callable.
-        If neither is provided, runs with the built-in AOS executor
+        Either provide an InfraRely agent or a custom task_executor callable.
+        If neither is provided, runs with the built-in InfraRely executor
         that simulates agent processing.
 
         Parameters
@@ -772,7 +772,7 @@ class BenchmarkRunner:
         suite : BenchmarkSuite
             The suite to run.
         agent : Agent, optional
-            AOS agent to benchmark.
+            InfraRely agent to benchmark.
         task_executor : callable, optional
             Custom executor: (BenchmarkTask) -> TaskResult.
         framework_name : str
@@ -840,7 +840,7 @@ class BenchmarkRunner:
         return execute
 
     def _run_with_agent(self, agent: Any, task: BenchmarkTask, t0: float) -> TaskResult:
-        """Run a task through an AOS agent."""
+        """Run a task through an InfraRely agent."""
         try:
             # Math tasks: try direct computation first (LLM bypass)
             if task.category == "math" and task.input_data:
@@ -1284,11 +1284,11 @@ class BenchmarkReport:
         self,
         *,
         use_color: bool = True,
-        aos_metrics: Optional["BenchmarkMetrics"] = None,
+        infrarely_metrics: Optional["BenchmarkMetrics"] = None,
         baselines: Optional[List["FrameworkBaseline"]] = None,
     ) -> None:
         self._use_color = use_color
-        self._aos_metrics = aos_metrics
+        self._aos_metrics = infrarely_metrics
         self._baselines = baselines or []
 
     def _c(self, code: str) -> str:
@@ -1297,7 +1297,7 @@ class BenchmarkReport:
 
     def comparison_table(
         self,
-        aos_metrics: Optional[BenchmarkMetrics] = None,
+        infrarely_metrics: Optional[BenchmarkMetrics] = None,
         baselines: Optional[List[FrameworkBaseline]] = None,
         *,
         metrics_to_show: Optional[List[str]] = None,
@@ -1308,8 +1308,8 @@ class BenchmarkReport:
 
         Parameters
         ----------
-        aos_metrics : BenchmarkMetrics
-            Metrics from the AOS benchmark run.
+        infrarely_metrics : BenchmarkMetrics
+            Metrics from the InfraRely benchmark run.
         baselines : list of FrameworkBaseline
             Baselines to compare against.
         metrics_to_show : list of str, optional
@@ -1321,12 +1321,14 @@ class BenchmarkReport:
             Formatted comparison table.
         """
         # Fall back to stored values from __init__
-        if aos_metrics is None:
-            aos_metrics = self._aos_metrics
+        if infrarely_metrics is None:
+            infrarely_metrics = self._aos_metrics
         if baselines is None:
             baselines = self._baselines
-        if aos_metrics is None:
-            raise ValueError("aos_metrics must be provided either at init or call time")
+        if infrarely_metrics is None:
+            raise ValueError(
+                "infrarely_metrics must be provided either at init or call time"
+            )
         if baselines is None:
             baselines = []
         # Allow overriding use_color per-call
@@ -1363,27 +1365,29 @@ class BenchmarkReport:
         col_w = (
             max(12, max(len(b_.framework) for b_ in baselines) + 2) if baselines else 12
         )
-        aos_w = max(12, len(aos_metrics.framework) + 2)
+        infrarely_w = max(12, len(infrarely_metrics.framework) + 2)
         winner_w = 18
 
         lines: List[str] = []
 
         # Title
         lines.append("")
-        lines.append(f"{b}{cy}AOS Performance Benchmark — {aos_metrics.suite_name}{r}")
         lines.append(
-            f"{dim}{'═' * (metric_w + aos_w + col_w * len(baselines) + winner_w + 8)}{r}"
+            f"{b}{cy}InfraRely Performance Benchmark — {infrarely_metrics.suite_name}{r}"
+        )
+        lines.append(
+            f"{dim}{'═' * (metric_w + infrarely_w + col_w * len(baselines) + winner_w + 8)}{r}"
         )
         lines.append("")
 
         # Header
-        hdr = f"  {'Metric':<{metric_w}} │ {b}{'AOS':^{aos_w}}{r}"
+        hdr = f"  {'Metric':<{metric_w}} │ {b}{'InfraRely':^{infrarely_w}}{r}"
         for bl in baselines:
             hdr += f" │ {bl.framework:^{col_w}}"
         hdr += f" │ {'Winner':^{winner_w}}"
         lines.append(hdr)
 
-        sep = f"  {'─' * metric_w}─┼─{'─' * aos_w}"
+        sep = f"  {'─' * metric_w}─┼─{'─' * infrarely_w}"
         for _ in baselines:
             sep += f"─┼─{'─' * col_w}"
         sep += f"─┼─{'─' * winner_w}"
@@ -1397,8 +1401,8 @@ class BenchmarkReport:
             )
 
             # InfraRely value
-            aos_val = getattr(aos_metrics, metric_key, 0.0)
-            aos_formatted = defn.format(aos_val)
+            infrarely_val = getattr(infrarely_metrics, metric_key, 0.0)
+            infrarely_formatted = defn.format(infrarely_val)
 
             # Baseline values
             bl_vals: List[Tuple[str, float, str]] = []
@@ -1414,18 +1418,18 @@ class BenchmarkReport:
             if bl_vals:
                 for fw_name, bv, _ in bl_vals:
                     if defn.direction == "higher":
-                        if aos_val > bv:
-                            diff = aos_val - bv
+                        if infrarely_val > bv:
+                            diff = infrarely_val - bv
                             if defn.unit == "%":
-                                winner_text = f"{g}✓ AOS (+{diff * 100:.1f}){r}"
+                                winner_text = f"{g}✓ InfraRely (+{diff * 100:.1f}){r}"
                             elif defn.unit == "ms":
-                                winner_text = f"{g}✓ AOS (−{abs(diff):.0f}ms){r}"
+                                winner_text = f"{g}✓ InfraRely (−{abs(diff):.0f}ms){r}"
                             elif defn.unit == "pts":
-                                winner_text = f"{g}✓ AOS (+{diff:.1f}){r}"
+                                winner_text = f"{g}✓ InfraRely (+{diff:.1f}){r}"
                             else:
-                                winner_text = f"{g}✓ AOS{r}"
-                        elif aos_val < bv:
-                            diff = bv - aos_val
+                                winner_text = f"{g}✓ InfraRely{r}"
+                        elif infrarely_val < bv:
+                            diff = bv - infrarely_val
                             if defn.unit == "%":
                                 winner_text = f"{red}✗ {fw_name} (+{diff * 100:.1f}){r}"
                             else:
@@ -1433,23 +1437,23 @@ class BenchmarkReport:
                         else:
                             winner_text = f"{dim}Tie{r}"
                     else:  # lower is better
-                        if aos_val < bv:
-                            diff = bv - aos_val
+                        if infrarely_val < bv:
+                            diff = bv - infrarely_val
                             if defn.unit == "%":
-                                winner_text = f"{g}✓ AOS (−{diff * 100:.1f}){r}"
+                                winner_text = f"{g}✓ InfraRely (−{diff * 100:.1f}){r}"
                             elif defn.unit == "ms":
-                                winner_text = f"{g}✓ AOS (−{diff:.0f}ms){r}"
+                                winner_text = f"{g}✓ InfraRely (−{diff:.0f}ms){r}"
                             elif defn.unit == "$":
-                                winner_text = f"{g}✓ AOS (−${diff:.2f}){r}"
+                                winner_text = f"{g}✓ InfraRely (−${diff:.2f}){r}"
                             else:
-                                winner_text = f"{g}✓ AOS{r}"
-                        elif aos_val > bv:
-                            diff = aos_val - bv
+                                winner_text = f"{g}✓ InfraRely{r}"
+                        elif infrarely_val > bv:
+                            diff = infrarely_val - bv
                             winner_text = f"{red}✗ {fw_name}{r}"
                         else:
                             winner_text = f"{dim}Tie{r}"
 
-            row = f"  {defn.display_name:<{metric_w}} │ {b}{aos_formatted:^{aos_w}}{r}"
+            row = f"  {defn.display_name:<{metric_w}} │ {b}{infrarely_formatted:^{infrarely_w}}{r}"
             for _, _, fmt in bl_vals:
                 row += f" │ {fmt:^{col_w}}"
             if not bl_vals:
@@ -1462,18 +1466,18 @@ class BenchmarkReport:
         # Summary
         lines.append("")
         lines.append(f"  {b}Summary:{r}")
-        lines.append(f"  • Tasks run: {aos_metrics.total_tasks}")
+        lines.append(f"  • Tasks run: {infrarely_metrics.total_tasks}")
         lines.append(
-            f"  • Completed: {aos_metrics.completed_tasks}/{aos_metrics.total_tasks}"
+            f"  • Completed: {infrarely_metrics.completed_tasks}/{infrarely_metrics.total_tasks}"
         )
-        lines.append(f"  • Duration:  {aos_metrics.run_duration_ms:.0f}ms")
-        lines.append(f"  • Score:     {b}{aos_metrics.score:.1f}/100{r}")
+        lines.append(f"  • Duration:  {infrarely_metrics.run_duration_ms:.0f}ms")
+        lines.append(f"  • Score:     {b}{infrarely_metrics.score:.1f}/100{r}")
         lines.append("")
 
         # Category breakdown
         if aos_metrics.category_scores:
             lines.append(f"  {b}Category Scores:{r}")
-            for cat, cscore in sorted(aos_metrics.category_scores.items()):
+            for cat, cscore in sorted(infrarely_metrics.category_scores.items()):
                 bar_len = int(cscore / 5)
                 bar = "█" * bar_len + "░" * (20 - bar_len)
                 color = (
@@ -1506,13 +1510,13 @@ class BenchmarkReport:
 
     def json_report(
         self,
-        aos_metrics: BenchmarkMetrics,
+        infrarely_metrics: BenchmarkMetrics,
         baselines: Optional[List[FrameworkBaseline]] = None,
     ) -> str:
         """Generate a JSON report."""
         report = {
             "benchmark_version": BENCHMARK_VERSION,
-            "aos_metrics": aos_metrics.to_dict(),
+            "infrarely_metrics": infrarely_metrics.to_dict(),
             "baselines": [b.to_dict() for b in (baselines or [])],
         }
         return json.dumps(report, indent=2)
@@ -1572,7 +1576,7 @@ def run_benchmark(
     vs : list of str, optional
         Frameworks to compare against (e.g., ['langchain', 'crewai']).
     agent : Agent, optional
-        AOS agent to benchmark.
+        InfraRely agent to benchmark.
     task_executor : callable, optional
         Custom task executor.
     verbose : bool

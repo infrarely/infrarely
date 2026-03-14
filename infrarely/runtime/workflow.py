@@ -1,5 +1,5 @@
 """
-aos/workflow.py — Workflow & Step engine
+infrarely/workflow.py — Workflow & Step engine
 ═══════════════════════════════════════════════════════════════════════════════
 Define multi-step capabilities as DAGs.
 
@@ -379,8 +379,10 @@ class Workflow:
             result = result_container[0]
             elapsed = (time.monotonic() - start) * 1000
 
-            # Check if tool returned an __aos_error
-            if isinstance(result, dict) and result.get("__aos_error"):
+            # Check if tool returned an infrarely-namespaced error marker
+            if isinstance(result, dict) and (
+                result.get("__infrarely_error") or result.get("__aos_error")
+            ):
                 error_msg = result.get("message", "Tool failed")
                 if step.fallback and step.fallback in self._steps:
                     fb_result = self._execute_step(self._steps[step.fallback])
@@ -560,7 +562,7 @@ def workflow(steps: List[Step]) -> Workflow:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# PARALLEL EXECUTION — aos.parallel()
+# PARALLEL EXECUTION — infrarely.parallel()
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
@@ -572,7 +574,7 @@ def parallel(tasks: List[Tuple[Any, str]], timeout: int = 60) -> List[Any]:
     Run multiple (agent, goal) pairs in parallel.
 
     Usage:
-        results = aos.parallel([
+        results = infrarely.parallel([
             (researcher, "Research company A"),
             (researcher, "Research company B"),
             (writer,     "Write summary"),

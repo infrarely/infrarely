@@ -1,5 +1,5 @@
 """
-aos/tool_sandbox.py — Tool Execution Sandboxing
+infrarely/tool_sandbox.py — Tool Execution Sandboxing
 ═══════════════════════════════════════════════════════════════════════════════
 SECURITY GAP 4: Tool Execution Has No Sandbox.
 

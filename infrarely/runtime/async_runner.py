@@ -1,5 +1,5 @@
 """
-aos/async_runner.py — Async/Concurrent Agent Execution
+infrarely/async_runner.py — Async/Concurrent Agent Execution
 ═══════════════════════════════════════════════════════════════════════════════
 Non-blocking agent execution for web servers and async applications.
 
@@ -46,7 +46,7 @@ def _get_executor(max_workers: int = 10) -> concurrent.futures.ThreadPoolExecuto
     if _executor is None or _executor._shutdown:
         _executor = concurrent.futures.ThreadPoolExecutor(
             max_workers=max_workers,
-            thread_name_prefix="aos-async",
+            thread_name_prefix="infrarely-async",
         )
     return _executor
 
@@ -187,7 +187,7 @@ async def async_delegate(
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ASYNC PARALLEL — Async version of aos.parallel()
+# ASYNC PARALLEL — Async version of infrarely.parallel()
 # ═══════════════════════════════════════════════════════════════════════════════
 
 

@@ -1,7 +1,7 @@
 """
-aos/_internal/plan_bridge.py — SDK ↔ Planning Engine bridge
+infrarely/_internal/plan_bridge.py — SDK ↔ Planning Engine bridge
 ═══════════════════════════════════════════════════════════════════════════════
-Wraps the AOS Deterministic Planning Engine for SDK use.
+Wraps the InfraRely Deterministic Planning Engine for SDK use.
 Handles plan generation, validation, and caching.
 """
 

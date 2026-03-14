@@ -1,5 +1,5 @@
 """
-aos/memory.py — Agent Memory API
+infrarely/memory.py — Agent Memory API
 ═══════════════════════════════════════════════════════════════════════════════
 Memory is infrastructure, not a feature (Problem 5).
 
@@ -33,6 +33,8 @@ from collections import OrderedDict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+
+from infrarely.runtime.paths import MEMORY_DB
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -511,7 +513,7 @@ class AgentMemory:
     Shared scope visible to all agents.
     """
 
-    def __init__(self, agent_id: str, db_path: str = "./aos_memory.db"):
+    def __init__(self, agent_id: str, db_path: str = str(MEMORY_DB)):
         self._agent_id = agent_id
         self._session = _InMemoryBackend()
         self._persistent = _SQLiteMemoryBackend(db_path)

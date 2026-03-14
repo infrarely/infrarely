@@ -1,5 +1,5 @@
 """
-aos/testing.py — Testing Utilities for Agent-Based Code
+infrarely/testing.py — Testing Utilities for Agent-Based Code
 ═══════════════════════════════════════════════════════════════════════════════
 Makes it easy to write unit tests for agent code.
 
@@ -47,7 +47,7 @@ _UNSET = object()  # sentinel for unset default values
 
 class AgentTestCase(unittest.TestCase):
     """
-    Base test case class for testing AOS agents.
+    Base test case class for testing InfraRely agents.
 
     Provides:
     - Automatic setup/teardown of test agents
@@ -354,7 +354,7 @@ def mock_llm_context(
             return side_effect(*args, **kwargs)
         return mock_response
 
-    with patch("aos._internal.bridge.ExecutionEngine._call_llm", mock_llm_call):
+    with patch("infrarely._internal.bridge.ExecutionEngine._call_llm", mock_llm_call):
         yield
 
 

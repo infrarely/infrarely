@@ -1,5 +1,5 @@
 """
-aos/knowledge.py — Knowledge API
+infrarely/knowledge.py — Knowledge API
 ═══════════════════════════════════════════════════════════════════════════════
 Ground agents in facts. Knowledge is queried BEFORE LLM.
 If confidence >= threshold (default from config: 0.85), LLM is bypassed entirely.

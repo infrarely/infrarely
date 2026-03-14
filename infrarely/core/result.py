@@ -1,5 +1,5 @@
 """
-aos/result.py — Structured Result & Error objects
+infrarely/result.py — Structured Result & Error objects
 ═══════════════════════════════════════════════════════════════════════════════
 Every SDK operation returns a Result. Never a bare exception.
 

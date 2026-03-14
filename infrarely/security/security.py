@@ -1,5 +1,5 @@
 """
-aos/security.py — Prompt Injection Defense System
+infrarely/security.py — Prompt Injection Defense System
 ═══════════════════════════════════════════════════════════════════════════════
 Protection against malicious inputs that try to hijack agent behavior.
 

@@ -1,20 +1,20 @@
 """
-aos/multitenancy.py — Multi-Tenancy Support
+infrarely/multitenancy.py — Multi-Tenancy Support
 ═══════════════════════════════════════════════════════════════════════════════
 SCALE GAP 5: Tenant isolation for knowledge, memory, tools, and billing.
 
 Usage:
     import infrarely
 
-    t = aos.create_tenant("acme-corp", config={
+    t = infrarely.create_tenant("acme-corp", config={
         "model": "gpt-4o-mini",
         "token_budget": 1_000_000,
     })
 
-    agent = aos.Agent("support", tenant_id="acme-corp")
+    agent = infrarely.Agent("support", tenant_id="acme-corp")
     result = agent.run("Help customer")       # isolated knowledge/memory/billing
 
-    usage = aos.tenant_manager.usage("acme-corp")
+    usage = infrarely.tenant_manager.usage("acme-corp")
     assert usage["tokens_used"] <= 1_000_000
 
 Architecture:

@@ -1,5 +1,5 @@
 """
-aos/context.py — Context Window Management
+infrarely/context.py — Context Window Management
 ═══════════════════════════════════════════════════════════════════════════════
 Automatic management of what gets sent to the LLM when accumulated
 context exceeds the model's token limit.

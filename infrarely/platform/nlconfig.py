@@ -1,10 +1,10 @@
 """
-aos/nlconfig.py — Natural Language Agent Configuration
+infrarely/nlconfig.py — Natural Language Agent Configuration
 ═══════════════════════════════════════════════════════════════════════════════
-Describe your agent in plain English and AOS builds the configuration
+Describe your agent in plain English and InfraRely builds the configuration
 automatically.
 
-    agent = aos.agent.from_description(\"\"\"
+    agent = infrarely.agent.from_description(\"\"\"
         A customer support agent for an e-commerce store.
         It should answer questions about orders, products, and returns.
         It must never discuss competitor products.
@@ -209,7 +209,7 @@ class AgentBlueprint:
     Complete parsed configuration from a natural language description.
 
     This is the intermediate representation between raw text and a
-    configured AOS Agent.
+    configured InfraRely Agent.
     """
 
     # Identity
@@ -1199,7 +1199,7 @@ class NLConfigurator:
             It should always be polite and professional.
         \"\"\")
 
-    The returned agent is a standard AOS Agent with:
+    The returned agent is a standard InfraRely Agent with:
       - Appropriate name and description
       - Blueprint metadata (.blueprint, .guardrails, etc.)
       - Knowledge seeded with domain hints
@@ -1246,7 +1246,7 @@ class NLConfigurator:
         Returns
         -------
         Agent
-            A configured AOS Agent.
+            A configured InfraRely Agent.
         """
         # Lazy import to avoid circular deps
         from infrarely.core.agent import Agent

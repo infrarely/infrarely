@@ -1,5 +1,5 @@
 """
-aos/integrations/postgres.py — PostgreSQL Integration
+infrarely/integrations/postgres.py — PostgreSQL Integration
 """
 
 from __future__ import annotations

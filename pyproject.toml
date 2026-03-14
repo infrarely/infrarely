@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "infrarely"
-version = "0.1.0"
+version = "0.1.6"
 description = "InfraRely — Reliable Agent Infrastructure. Production-grade agent framework with zero boilerplate."
 readme = "README.md"
 license = {text = "MIT"}

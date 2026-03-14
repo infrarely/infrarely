@@ -1,12 +1,12 @@
 """
-aos/events.py — Webhook & Event-Driven Architecture
+infrarely/events.py — Webhook & Event-Driven Architecture
 ═══════════════════════════════════════════════════════════════════════════════
 SCALE GAP 6: Event triggers, webhooks, and scheduled tasks.
 
 Usage:
     import infrarely
 
-    agent = aos.Agent("notifier")
+    agent = infrarely.Agent("notifier")
 
     @agent.on_event("ticket_created")
     def handle_ticket(event):
@@ -204,7 +204,7 @@ class WebhookRegistry:
 
     This provides the registration layer. The actual HTTP server
     is handled by the host framework (Flask, FastAPI, etc.).
-    AOS provides the routing and dispatch.
+    InfraRely provides the routing and dispatch.
     """
 
     def __init__(self):

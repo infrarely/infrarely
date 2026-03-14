@@ -1,5 +1,5 @@
 """
-aos/input_sanitizer.py — Always-On Input Sanitization
+infrarely/input_sanitizer.py — Always-On Input Sanitization
 ═══════════════════════════════════════════════════════════════════════════════
 SECURITY GAP 1: No Input Sanitization.
 

@@ -1,5 +1,5 @@
 """
-aos/self_heal.py — Self-Healing Agents (Evolution Engine)
+infrarely/self_heal.py — Self-Healing Agents (Evolution Engine)
 ═══════════════════════════════════════════════════════════════════════════════
 Layer 7: Agents that automatically detect poor performance and fix themselves
 without human intervention.

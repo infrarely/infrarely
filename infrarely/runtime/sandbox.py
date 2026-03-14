@@ -1,5 +1,5 @@
 """
-aos/sandbox.py — Agent Sandboxing & Resource Isolation
+infrarely/sandbox.py — Agent Sandboxing & Resource Isolation
 ═══════════════════════════════════════════════════════════════════════════════
 SCALE GAP 2: Resource isolation between agents so one misbehaving agent
 can't take down others.
@@ -14,7 +14,7 @@ Provides per-agent limits on:
 Usage::
 
     agent = infrarely.agent("untrusted-agent",
-        sandbox=aos.Sandbox(
+        sandbox=infrarely.Sandbox(
             max_memory_mb=512,
             max_execution_time=30,
             max_tool_calls_per_task=20,

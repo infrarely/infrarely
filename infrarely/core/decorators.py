@@ -1,7 +1,7 @@
 """
-aos/decorators.py — @infrarely.tool and @infrarely.capability decorators
+infrarely/decorators.py — @infrarely.tool and @infrarely.capability decorators
 ═══════════════════════════════════════════════════════════════════════════════
-Transform plain Python functions into AOS-managed tools and capabilities.
+Transform plain Python functions into InfraRely-managed tools and capabilities.
 
 @infrarely.tool wraps a function with:
   - Automatic retry with exponential backoff
@@ -248,7 +248,7 @@ def tool(
     rate_window: float = 60.0,
 ) -> Union[Callable, Callable[[Callable], Callable]]:
     """
-    Decorator that registers a function as an AOS tool.
+    Decorator that registers a function as an InfraRely tool.
 
     Usage:
         @infrarely.tool
@@ -305,7 +305,7 @@ def tool(
                 meta.error_count += 1
                 meta.last_error = "Rate limit exceeded"
                 return {
-                    "__aos_error": True,
+                    "__infrarely_error": True,
                     "type": "TOOL_FAILURE",
                     "message": f"Tool '{tool_name}' rate limit exceeded "
                     f"({rate_limit} calls per {rate_window}s). Try again later.",
@@ -317,7 +317,7 @@ def tool(
                 meta.error_count += 1
                 meta.last_error = "Circuit breaker OPEN"
                 return {
-                    "__aos_error": True,
+                    "__infrarely_error": True,
                     "type": "TOOL_FAILURE",
                     "message": f"Tool '{tool_name}' circuit breaker is OPEN. "
                     f"Too many recent failures. Will retry after cooldown.",
@@ -398,7 +398,7 @@ def tool(
 
             # ── Return structured error (never bare exception) ────────────────
             return {
-                "__aos_error": True,
+                "__infrarely_error": True,
                 "type": "TOOL_FAILURE",
                 "message": f"Tool '{tool_name}' failed after {retries + 1} attempts: "
                 f"{last_error}",
@@ -407,12 +407,12 @@ def tool(
                 "last_error": str(last_error),
             }
 
-        # ── Attach metadata to wrapper ────────────────────────────────────────
-        wrapper._aos_tool = True
-        wrapper._aos_meta = meta
-        wrapper._aos_cache = _cache_store
-        wrapper._aos_circuit_breaker = _cb
-        wrapper._aos_rate_limiter = _limiter
+        # ── Attach metadata to wrapper ─────────────────────────────────────────────
+        wrapper._infrarely_tool = True
+        wrapper._infrarely_meta = meta
+        wrapper._infrarely_cache = _cache_store
+        wrapper._infrarely_circuit_breaker = _cb
+        wrapper._infrarely_rate_limiter = _limiter
 
         # ── Register in global tool registry ──────────────────────────────────
         _registry.register(wrapper, meta)
@@ -459,6 +459,10 @@ class CapabilityRegistry:
     def get(self, name: str) -> Optional[CapabilityMeta]:
         return self._capabilities.get(name)
 
+    def get_meta(self, name: str) -> Optional[CapabilityMeta]:
+        """Return the CapabilityMeta for *name*, or None.  Mirrors ToolRegistry.get_meta."""
+        return self._capabilities.get(name)
+
     def list_capabilities(self) -> List[CapabilityMeta]:
         return list(self._capabilities.values())
 
@@ -494,7 +498,7 @@ def capability(
     description: str = "",
 ) -> Union[Callable, Callable[[Callable], Callable]]:
     """
-    Decorator that registers a function as an AOS capability (workflow).
+    Decorator that registers a function as an InfraRely capability (workflow).
 
     Usage:
         @infrarely.capability(name="exam_prep", description="Prepares for exams")
@@ -527,8 +531,8 @@ def capability(
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
 
-        wrapper._aos_capability = True
-        wrapper._aos_meta = meta
+        wrapper._infrarely_capability = True
+        wrapper._infrarely_meta = meta
 
         _cap_registry.register(meta)
 

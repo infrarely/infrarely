@@ -1,5 +1,5 @@
 """
-aos/integrations/gmail.py — Gmail Integration
+infrarely/integrations/gmail.py — Gmail Integration
 """
 
 from __future__ import annotations

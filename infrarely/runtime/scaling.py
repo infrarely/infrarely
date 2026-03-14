@@ -1,7 +1,7 @@
 """
-aos/scaling.py — Horizontal Scaling & State Backend Support
+infrarely/scaling.py — Horizontal Scaling & State Backend Support
 ═══════════════════════════════════════════════════════════════════════════════
-SCALE GAP 3: The ability to run multiple AOS instances that share state.
+SCALE GAP 3: The ability to run multiple InfraRely instances that share state.
 
 Current: Single Python process, SQLite.
 Upgrade path:
@@ -28,6 +28,8 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
+
+from infrarely.runtime.paths import STATE_DB
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -188,7 +190,7 @@ class MemoryBackend(StateBackend):
 class SQLiteBackend(StateBackend):
     """SQLite-based state backend for single-machine deployment."""
 
-    def __init__(self, db_path: str = "./aos_state.db"):
+    def __init__(self, db_path: str = str(STATE_DB)):
         self._db_path = db_path
         os.makedirs(
             os.path.dirname(db_path) if os.path.dirname(db_path) else ".", exist_ok=True
@@ -278,7 +280,9 @@ class RedisBackend(StateBackend):
     Falls back gracefully if redis is not installed.
     """
 
-    def __init__(self, redis_url: str = "redis://localhost:6379", prefix: str = "aos:"):
+    def __init__(
+        self, redis_url: str = "redis://localhost:6379", prefix: str = "infrarely:"
+    ):
         self._prefix = prefix
         self._redis_url = redis_url
         self._client = None
@@ -384,11 +388,11 @@ def create_backend(
     if backend_type == "memory":
         return MemoryBackend()
     elif backend_type == "sqlite":
-        return SQLiteBackend(db_path=kwargs.get("db_path", "./aos_state.db"))
+        return SQLiteBackend(db_path=kwargs.get("db_path", str(STATE_DB)))
     elif backend_type == "redis":
         return RedisBackend(
             redis_url=kwargs.get("redis_url", "redis://localhost:6379"),
-            prefix=kwargs.get("prefix", "aos:"),
+            prefix=kwargs.get("prefix", "infrarely:"),
         )
     else:
         raise ValueError(
@@ -404,15 +408,15 @@ def create_backend(
 
 class CoordinationManager:
     """
-    Manages distributed coordination between AOS instances.
+    Manages distributed coordination between InfraRely instances.
 
     Provides leader election, task partitioning, and health checking
-    across multiple AOS workers.
+    across multiple InfraRely workers.
     """
 
     def __init__(self, backend: StateBackend, instance_id: Optional[str] = None):
         self._backend = backend
-        self._instance_id = instance_id or f"aos_{os.getpid()}_{int(time.time())}"
+        self._instance_id = instance_id or f"infrarely_{os.getpid()}_{int(time.time())}"
         self._heartbeat_interval = 5.0
         self._heartbeat_thread: Optional[threading.Thread] = None
         self._running = False
@@ -422,7 +426,7 @@ class CoordinationManager:
         return self._instance_id
 
     def register_instance(self) -> None:
-        """Register this AOS instance in the coordination registry."""
+        """Register this InfraRely instance in the coordination registry."""
         self._backend.set(
             f"instance:{self._instance_id}",
             json.dumps(
@@ -437,7 +441,7 @@ class CoordinationManager:
         )
 
     def get_instances(self) -> List[Dict[str, Any]]:
-        """Get all live AOS instances."""
+        """Get all live InfraRely instances."""
         keys = self._backend.keys("instance:*")
         instances = []
         for key in keys:
@@ -464,7 +468,9 @@ class CoordinationManager:
                 time.sleep(self._heartbeat_interval)
 
         self._heartbeat_thread = threading.Thread(
-            target=heartbeat_loop, daemon=True, name="aos-coordination-heartbeat"
+            target=heartbeat_loop,
+            daemon=True,
+            name="infrarely-coordination-heartbeat",
         )
         self._heartbeat_thread.start()
 

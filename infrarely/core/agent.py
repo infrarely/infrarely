@@ -1,5 +1,5 @@
 """
-aos/core.py — Agent class: the single entry point
+infrarely/core.py — Agent class: the single entry point
 ═══════════════════════════════════════════════════════════════════════════════
 Everything starts here.  ``agent = infrarely.agent("tutor")``
 
@@ -84,6 +84,7 @@ from infrarely.platform.acp import (
     get_acp_transport,
     get_acp_registry,
 )
+from infrarely.runtime.paths import MEMORY_DB, TRACES_DB
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -147,7 +148,7 @@ def _all_agents() -> Dict[str, "Agent"]:
 
 class Agent:
     """
-    The core building block of AOS.
+    The core building block of InfraRely.
 
     Quick start::
 
@@ -244,7 +245,7 @@ class Agent:
         self._memory: Optional[AgentMemory] = None
         if memory_enabled:
             cfg = get_config()
-            db_path = cfg.get("memory_db_path", "./aos_memory.db")
+            db_path = cfg.get("memory_db_path", str(MEMORY_DB))
             self._memory = AgentMemory(self._id, db_path=db_path)
 
         # ── Knowledge ─────────────────────────────────────────────────────────
@@ -254,7 +255,7 @@ class Agent:
 
         # ── Trace store ───────────────────────────────────────────────────────
         cfg = get_config()
-        trace_db = cfg.get("trace_db_path", "./aos_traces.db")
+        trace_db = cfg.get("trace_db_path", str(TRACES_DB))
         self._trace_store = TraceStore(trace_db)
 
         # ── HITL gate ────────────────────────────────────────────────────────
@@ -333,7 +334,7 @@ class Agent:
         if self._memory is None:
             # Create on demand if wasn't enabled
             cfg = get_config()
-            db_path = cfg.get("memory_db_path", "./aos_memory.db")
+            db_path = cfg.get("memory_db_path", str(MEMORY_DB))
             self._memory = AgentMemory(self._id, db_path=db_path)
         return self._memory
 
@@ -374,7 +375,7 @@ class Agent:
         """
         Execute a goal and return a structured Result.
 
-        The full AOS pipeline:
+        The full InfraRely pipeline:
           1. Knowledge check (bypass LLM if confidence ≥ threshold)
           2. Intent classification (deterministic routing)
           3. Tool / capability / workflow execution
@@ -667,8 +668,8 @@ class Agent:
         """
         Delegate a task to an external agent via the Agent Collaboration Protocol.
 
-        This enables AOS agents to collaborate with agents built on any framework
-        (LangChain, CrewAI, AutoGPT, custom REST agents) — making AOS the
+        This enables InfraRely agents to collaborate with agents built on any framework
+        (LangChain, CrewAI, AutoGPT, custom REST agents) — making InfraRely the
         infrastructure layer for multi-framework agent systems.
 
         Parameters
@@ -751,7 +752,11 @@ class Agent:
         # Build ACP message
         message = ACPMessage(
             protocol=protocol,
-            sender=ACPIdentity(name=self._name, framework="aos", version="0.1.0"),
+            sender=ACPIdentity(
+                name=self._name,
+                framework="infrarely",
+                version="0.1.0",
+            ),
             task=task,
             context=ctx_dict,
             timeout_ms=timeout_ms,
@@ -799,7 +804,7 @@ class Agent:
                 duration_ms=elapsed,
             )
 
-        # Convert ACP response → AOS Result
+        # Convert ACP response → InfraRely Result
         result = ACPAdapter.response_to_result(acp_response)
 
         # Tag with delegation metadata
@@ -1368,7 +1373,7 @@ class Agent:
         """
         Create an agent from a plain English description.
 
-        AOS parses the description and auto-generates the configuration
+        InfraRely parses the description and auto-generates the configuration
         including tools, capabilities, guardrails, and knowledge schema.
 
         Example::
@@ -1539,5 +1544,5 @@ def shutdown() -> None:
             ag.shutdown()
         except Exception as e:
             logger.warning(f"Error shutting down agent '{name}': {e}")
-    logger.info(f"AOS shutdown complete. {len(agents)} agents stopped.")
+    logger.info(f"InfraRely shutdown complete. {len(agents)} agents stopped.")
     logger.close()  # Flush and close log files

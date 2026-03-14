@@ -1,5 +1,5 @@
 """
-aos/key_rotation.py — API Key Rotation Without Restart
+infrarely/key_rotation.py — API Key Rotation Without Restart
 ═══════════════════════════════════════════════════════════════════════════════
 SECURITY GAP 3: No API Key Rotation Support.
 

@@ -1,7 +1,7 @@
 """
-aos/_internal/knowledge_bridge.py — SDK ↔ Knowledge Layer bridge
+infrarely/_internal/knowledge_bridge.py — SDK ↔ Knowledge Layer bridge
 ═══════════════════════════════════════════════════════════════════════════════
-Connects SDK knowledge API to AOS Knowledge Layer infrastructure.
+Connects SDK knowledge API to InfraRely Knowledge Layer infrastructure.
 Handles knowledge source registration, indexing, and querying.
 """
 

@@ -19,7 +19,7 @@ State Enum:
   IDLE → PLANNING → EXECUTING → WAITING → VERIFYING → COMPLETED
                                                      → FAILED → PLANNING (if retry budget)
 
-RULES (from AOS spec):
+RULES (from InfraRely spec):
   RULE 2 — STATE IS TRUTH
     No agent executes without a registered state.
     No state transitions without a validated guard condition.
@@ -172,7 +172,7 @@ class TransitionGuards:
         self._register_default_guards()
 
     def _register_default_guards(self):
-        """Register the default guard conditions from the AOS spec."""
+        """Register the default guard conditions from the InfraRely spec."""
 
         # IDLE → PLANNING: goal must be set and valid
         self.register(

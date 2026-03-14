@@ -1,7 +1,7 @@
 """
-aos/integrations/github.py — GitHub Integration
+infrarely/integrations/github.py — GitHub Integration
 ═══════════════════════════════════════════════════════════════════════════════
-Pre-built GitHub tools for AOS agents.
+Pre-built GitHub tools for InfraRely agents.
 
 Usage::
 

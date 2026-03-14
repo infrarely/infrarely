@@ -32,7 +32,7 @@ class CapabilityRegistry:
 
     def __init__(self):
         self._capabilities: Dict[str, Capability] = {}
-        self._tag_index:    Dict[str, str]        = {}  # tag → capability name
+        self._tag_index: Dict[str, str] = {}  # tag → capability name
 
     def register(self, capability: Capability) -> "CapabilityRegistry":
         self._capabilities[capability.name] = capability
@@ -40,8 +40,8 @@ class CapabilityRegistry:
             self._tag_index[tag.lower()] = capability.name
         logger.debug(
             f"CapabilityRegistry: registered '{capability.name}'",
-            steps  = len(capability.steps),
-            tags   = len(capability.intent_tags),
+            steps=len(capability.steps),
+            tags=len(capability.intent_tags),
         )
         return self
 
@@ -54,14 +54,16 @@ class CapabilityRegistry:
         for tag, cap_name in self._tag_index.items():
             if tag in lower:
                 cap = self._capabilities[cap_name]
-                logger.debug(f"CapabilityRegistry: matched '{cap_name}' via tag '{tag}'")
+                logger.debug(
+                    f"CapabilityRegistry: matched '{cap_name}' via tag '{tag}'"
+                )
                 return cap
         return None
 
     def build_plan(
         self,
-        capability:  Capability,
-        task_state:  TaskState,
+        capability: Capability,
+        task_state: TaskState,
         extra_params: Dict = None,
     ) -> CapabilityPlan:
         """
@@ -78,31 +80,37 @@ class CapabilityRegistry:
             enriched_steps = []
             for step in capability.steps:
                 merged = dict(extra_params)
-                merged.update(step.base_params)   # step params win over query params
-                enriched_steps.append(CapabilityStep(
-                    name           = step.name,
-                    tool_name      = step.tool_name,
-                    base_params    = merged,
-                    failure_policy = step.failure_policy,
-                    condition      = step.condition,
-                    description    = step.description,
-                ))
+                merged.update(step.base_params)  # step params win over query params
+                enriched_steps.append(
+                    CapabilityStep(
+                        name=step.name,
+                        tool_name=step.tool_name,
+                        base_params=merged,
+                        failure_policy=step.failure_policy,
+                        condition=step.condition,
+                        description=step.description,
+                    )
+                )
             enriched_cap = Capability(
-                name        = capability.name,
-                description = capability.description,
-                steps       = enriched_steps,
-                intent_tags = capability.intent_tags,
+                name=capability.name,
+                description=capability.description,
+                steps=enriched_steps,
+                intent_tags=capability.intent_tags,
             )
         else:
             enriched_cap = capability
 
         return CapabilityPlan(
-            capability       = enriched_cap,
-            task_state       = task_state,
-            initial_context  = dict(task_state.params),
+            capability=enriched_cap,
+            task_state=task_state,
+            initial_context=dict(task_state.params),
         )
 
     def get(self, name: str) -> Optional[Capability]:
+        return self._capabilities.get(name)
+
+    def get_meta(self, name: str) -> Optional[Capability]:
+        """Return the Capability for *name*, or None.  Mirrors ToolRegistry.get_meta."""
         return self._capabilities.get(name)
 
     def names(self) -> List[str]:
@@ -118,12 +126,13 @@ class CapabilityRegistry:
 def build_student_capability_registry() -> CapabilityRegistry:
     """Factory — creates and registers all student capabilities."""
     from infrarely.capabilities.student_capabilities import ALL_CAPABILITIES
+
     registry = CapabilityRegistry()
     for cap in ALL_CAPABILITIES:
         registry.register(cap)
     logger.info(
         "CapabilityRegistry built",
-        count        = len(registry),
-        capabilities = registry.names(),
+        count=len(registry),
+        capabilities=registry.names(),
     )
     return registry

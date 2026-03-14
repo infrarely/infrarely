@@ -1,5 +1,5 @@
 """
-aos/sync.py — Knowledge Source Auto-Sync
+infrarely/sync.py — Knowledge Source Auto-Sync
 ═══════════════════════════════════════════════════════════════════════════════
 Knowledge sources that automatically refresh when data changes.
 
@@ -289,7 +289,7 @@ class SyncScheduler:
         self._thread = threading.Thread(
             target=self._scheduler_loop,
             daemon=True,
-            name="aos-sync-scheduler",
+            name="infrarely-sync-scheduler",
         )
         self._thread.start()
 

@@ -21,8 +21,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 import infrarely.core.app_config as config
 from infrarely.observability import logger
+from infrarely.runtime.paths import FAILURE_REPORTS_DIR
 
-_REPORT_DIR = os.path.join(config.LOG_DIR, "failure_reports")
+_REPORT_DIR = str(FAILURE_REPORTS_DIR)
 os.makedirs(_REPORT_DIR, exist_ok=True)
 
 

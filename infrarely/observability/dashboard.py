@@ -1,11 +1,11 @@
 """
-aos/dashboard.py — Live Dashboard & Health Server
+infrarely/dashboard.py — Live Dashboard & Health Server
 ═══════════════════════════════════════════════════════════════════════════════
 Problem 8: Deployment is a separate problem in every other SDK.
 SDK includes one-command deploy, health check, and live monitoring.
 
   infrarely.dashboard.start(port=8080)    → web dashboard
-  aos.health.serve(port=8081)       → health endpoint for load balancers
+  infrarely.health.serve(port=8081)       → health endpoint for load balancers
   infrarely.metrics.export("prometheus")  → Prometheus scrape endpoint
 """
 
@@ -83,7 +83,7 @@ class HealthServer:
 _DASHBOARD_HTML = """<!DOCTYPE html>
 <html>
 <head>
-    <title>AOS Dashboard</title>
+    <title>InfraRely Dashboard</title>
     <meta charset="utf-8">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -112,7 +112,7 @@ _DASHBOARD_HTML = """<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <h1>AOS InfraRely</h1>
+    <h1>InfraRely</h1>
     <div class="grid" id="metrics"></div>
     <div class="traces">
         <h2>Recent Traces</h2>
@@ -217,7 +217,7 @@ class _DashboardHandler(BaseHTTPRequestHandler):
 
 
 class Dashboard:
-    """AOS Dashboard — live monitoring web UI."""
+    """InfraRely Dashboard — live monitoring web UI."""
 
     def __init__(self):
         self._server: Optional[HTTPServer] = None

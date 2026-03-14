@@ -1,5 +1,5 @@
 """
-aos/versioning.py — Agent Versioning & Rollback System
+infrarely/versioning.py — Agent Versioning & Rollback System
 ═══════════════════════════════════════════════════════════════════════════════
 Version, compare, and rollback agent configurations.
 
@@ -8,12 +8,12 @@ have no version control. This module solves that.
 
 Usage::
 
-    aos.versions.save(agent, tag="v1.0-stable")
+    infrarely.versions.save(agent, tag="v1.0-stable")
     agent.knowledge.add_data("new_docs", "...")
-    aos.versions.save(agent, tag="v1.1-beta")
+    infrarely.versions.save(agent, tag="v1.1-beta")
 
-    comparison = aos.versions.compare("v1.0-stable", "v1.1-beta", eval_suite)
-    aos.versions.rollback(agent, tag="v1.0-stable")
+    comparison = infrarely.versions.compare("v1.0-stable", "v1.1-beta", eval_suite)
+    infrarely.versions.rollback(agent, tag="v1.0-stable")
 """
 
 from __future__ import annotations
@@ -25,6 +25,8 @@ import time
 import hashlib
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
+
+from infrarely.runtime.paths import VERSIONS_DIR
 
 if TYPE_CHECKING:
     from infrarely.core.agent import Agent
@@ -146,7 +148,7 @@ class VersionManager:
         versions.rollback(agent, tag="v1.0")
     """
 
-    def __init__(self, storage_dir: str = "./.aos_versions"):
+    def __init__(self, storage_dir: str = str(VERSIONS_DIR)):
         self._storage_dir = storage_dir
         self._snapshots: Dict[str, AgentSnapshot] = {}
         self._load_from_disk()
@@ -464,7 +466,7 @@ class VersionManager:
 _version_manager: Optional[VersionManager] = None
 
 
-def get_version_manager(storage_dir: str = "./.aos_versions") -> VersionManager:
+def get_version_manager(storage_dir: str = str(VERSIONS_DIR)) -> VersionManager:
     """Get or create the global version manager."""
     global _version_manager
     if _version_manager is None:

@@ -24,7 +24,7 @@ DECISION GATE (CRITICAL — replaces LLM default behavior):
   if confidence < 0.70:
     → Flag as LOW_CONFIDENCE → trigger knowledge gap event
 
-RULES (from AOS spec):
+RULES (from InfraRely spec):
   RULE 3 — KNOWLEDGE BEFORE GENERATION
     Before any LLM call, the Knowledge Resolver MUST be queried.
     If confidence > 0.85 from knowledge retrieval, LLM is bypassed entirely.

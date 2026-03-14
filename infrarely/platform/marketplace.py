@@ -1,5 +1,5 @@
 """
-aos/marketplace.py — Agent Marketplace
+infrarely/marketplace.py — Agent Marketplace
 ═══════════════════════════════════════════════════════════════════════════════
 A registry where developers publish capabilities and other developers
 install them like npm packages.
@@ -43,6 +43,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+
+from infrarely.runtime.paths import PACKAGES_DIR
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -124,7 +126,7 @@ class PackageMeta:
     # Dependencies
     dependencies: List[str] = field(default_factory=list)  # other packages
     python_requires: str = ">=3.10"
-    aos_requires: str = ">=0.1.0"
+    infrarely_requires: str = ">=0.1.0"
 
     # Source
     homepage: str = ""
@@ -173,7 +175,7 @@ class PackageMeta:
             "capabilities": list(self.capabilities),
             "dependencies": list(self.dependencies),
             "python_requires": self.python_requires,
-            "aos_requires": self.aos_requires,
+            "infrarely_requires": self.infrarely_requires,
             "homepage": self.homepage,
             "repository": self.repository,
             "documentation": self.documentation,
@@ -202,7 +204,8 @@ class PackageMeta:
             capabilities=d.get("capabilities", []),
             dependencies=d.get("dependencies", []),
             python_requires=d.get("python_requires", ">=3.10"),
-            aos_requires=d.get("aos_requires", ">=0.1.0"),
+            infrarely_requires=d.get("infrarely_requires")
+            or d.get("aos_requires", ">=0.1.0"),
             homepage=d.get("homepage", ""),
             repository=d.get("repository", ""),
             documentation=d.get("documentation", ""),
@@ -615,7 +618,7 @@ class PackageManager:
     def __init__(
         self,
         registry: MarketplaceRegistry,
-        install_dir: str = "./.aos_packages",
+        install_dir: str = str(PACKAGES_DIR),
     ):
         self._registry = registry
         self._install_dir = install_dir
@@ -842,7 +845,7 @@ class Marketplace:
         self,
         registry: Optional[MarketplaceRegistry] = None,
         manager: Optional[PackageManager] = None,
-        install_dir: str = "./.aos_packages",
+        install_dir: str = str(PACKAGES_DIR),
     ):
         self._registry = registry or MarketplaceRegistry()
         self._manager = manager or PackageManager(self._registry, install_dir)
@@ -1055,7 +1058,7 @@ def _reset_marketplace() -> None:
             _marketplace_instance._manager._installed.clear()
         _marketplace_instance = None
     # Clean default install dir to prevent stale manifest leaking between runs
-    default_manifest = os.path.join("./.aos_packages", "manifest.json")
+    default_manifest = os.path.join(str(PACKAGES_DIR), "manifest.json")
     if os.path.isfile(default_manifest):
         try:
             os.remove(default_manifest)

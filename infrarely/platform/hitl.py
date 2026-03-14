@@ -1,5 +1,5 @@
 """
-aos/hitl.py — Human-in-the-Loop (HITL) Approval System
+infrarely/hitl.py — Human-in-the-Loop (HITL) Approval System
 ═══════════════════════════════════════════════════════════════════════════════
 Enables agents to pause mid-execution, request human approval, and resume.
 

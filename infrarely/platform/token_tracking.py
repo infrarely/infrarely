@@ -1,5 +1,5 @@
 """
-aos/token_tracking.py — Token Cost Tracking
+infrarely/token_tracking.py — Token Cost Tracking
 ═══════════════════════════════════════════════════════════════════════════════
 SCALE GAP 1: Track exactly how many tokens each agent uses and how much it costs.
 

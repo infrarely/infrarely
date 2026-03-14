@@ -1,13 +1,13 @@
 """
-aos/acp.py — Agent Collaboration Protocol (ACP)
+infrarely/acp.py — Agent Collaboration Protocol (ACP)
 ═══════════════════════════════════════════════════════════════════════════════
-A standard protocol that allows AOS agents to collaborate with agents built
+A standard protocol that allows InfraRely agents to collaborate with agents built
 on other frameworks (LangChain, CrewAI, AutoGPT, custom REST agents).
 
-AOS becomes infrastructure — like TCP/IP for agents. You don't fight it,
+InfraRely becomes infrastructure — like TCP/IP for agents. You don't fight it,
 you run on top of it.
 
-Usage (outbound — AOS agent calls external agent)::
+Usage (outbound — InfraRely agent calls external agent)::
 
     result = my_agent.delegate_external(
         endpoint="http://other-service/agent",
@@ -16,7 +16,7 @@ Usage (outbound — AOS agent calls external agent)::
         context=my_context,
     )
 
-Usage (inbound — expose AOS agent as ACP endpoint)::
+Usage (inbound — expose InfraRely agent as ACP endpoint)::
 
     server = ACPServer(my_agent, host="0.0.0.0", port=9000)
     server.start()  # Other framework agents can now POST to /acp/v1/task
@@ -42,7 +42,7 @@ Protocol wire format (ACP/1.0)::
         "protocol": "ACP/1.0",
         "message_id": "...",
         "in_reply_to": "...",
-        "sender": {"name": "aos-tutor", "framework": "aos"},
+        "sender": {"name": "infrarely-tutor", "framework": "infrarely"},
         "status": "success",
         "output": "...",
         "confidence": 0.95,
@@ -98,7 +98,8 @@ class ACPStatus(enum.Enum):
 class ACPFramework(enum.Enum):
     """Known agent frameworks for interoperability."""
 
-    AOS = "aos"
+    INFRARELY = "infrarely"
+    AOS = "infrarely"  # legacy alias
     LANGCHAIN = "langchain"
     CREWAI = "crewai"
     AUTOGPT = "autogpt"
@@ -657,14 +658,14 @@ class ACPRegistry:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ACP ADAPTER — converts between AOS Result and ACP wire format
+# ACP ADAPTER — converts between InfraRely Result and ACP wire format
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
 class ACPAdapter:
     """
-    Converts between AOS internal types (Result) and ACP wire format.
-    This is the bridge between "AOS world" and "every other framework."
+    Converts between InfraRely internal types (Result) and ACP wire format.
+    This is the bridge between "InfraRely world" and "every other framework."
     """
 
     @staticmethod
@@ -674,7 +675,7 @@ class ACPAdapter:
         in_reply_to: str = "",
         agent_name: str = "",
     ) -> ACPResponse:
-        """Convert an AOS Result object to an ACPResponse."""
+        """Convert an InfraRely Result object to an ACPResponse."""
         # Import here to avoid circular imports
         from infrarely.core.result import Result
 
@@ -683,7 +684,10 @@ class ACPAdapter:
                 in_reply_to=in_reply_to,
                 status=ACPStatus.SUCCESS.value,
                 output=str(result),
-                sender=ACPIdentity(name=agent_name, framework="aos"),
+                sender=ACPIdentity(
+                    name=agent_name,
+                    framework=ACPFramework.INFRARELY.value,
+                ),
             )
 
         status = ACPStatus.SUCCESS.value if result.success else ACPStatus.ERROR.value
@@ -699,7 +703,10 @@ class ACPAdapter:
 
         return ACPResponse(
             in_reply_to=in_reply_to,
-            sender=ACPIdentity(name=agent_name, framework="aos"),
+            sender=ACPIdentity(
+                name=agent_name,
+                framework=ACPFramework.INFRARELY.value,
+            ),
             status=status,
             output=result.output,
             confidence=result.confidence,
@@ -711,7 +718,7 @@ class ACPAdapter:
 
     @staticmethod
     def response_to_result(response: ACPResponse) -> Any:
-        """Convert an ACPResponse to an AOS Result."""
+        """Convert an ACPResponse to an InfraRely Result."""
         from infrarely.core.result import Result, Error, ErrorType
 
         if response.success:
@@ -748,7 +755,7 @@ class ACPAdapter:
 
     @staticmethod
     def message_to_task(message: ACPMessage) -> Dict[str, Any]:
-        """Convert an incoming ACP message to an AOS-compatible task dict."""
+        """Convert an incoming ACP message to an InfraRely-compatible task dict."""
         return {
             "goal": message.task,
             "context": message.context,
@@ -760,13 +767,13 @@ class ACPAdapter:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ACP SERVER — expose an AOS agent as an ACP endpoint
+# ACP SERVER — expose an InfraRely agent as an ACP endpoint
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
 class ACPServer:
     """
-    Lightweight HTTP server that exposes an AOS agent as an ACP endpoint.
+    Lightweight HTTP server that exposes an InfraRely agent as an ACP endpoint.
     Other framework agents (LangChain, CrewAI, etc.) can POST tasks to it.
 
     Uses only stdlib (http.server) — zero dependencies.
@@ -862,7 +869,7 @@ class ACPServer:
                 error_message=f"Agent execution failed: {e}",
                 sender=ACPIdentity(
                     name=getattr(self._agent, "name", ""),
-                    framework="aos",
+                    framework=ACPFramework.INFRARELY.value,
                 ),
             )
 
@@ -874,7 +881,7 @@ class ACPServer:
             "protocol": ACP_VERSION,
             "status": "healthy" if agent_alive else "degraded",
             "agent": agent_name,
-            "framework": "aos",
+            "framework": ACPFramework.INFRARELY.value,
             "requests_handled": self._request_count,
         }
 
@@ -888,7 +895,7 @@ class ACPServer:
         return {
             "protocol": ACP_VERSION,
             "agent": getattr(self._agent, "name", "") if self._agent else "",
-            "framework": "aos",
+            "framework": ACPFramework.INFRARELY.value,
             "capabilities": caps,
         }
 

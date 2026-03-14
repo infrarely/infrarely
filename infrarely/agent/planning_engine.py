@@ -25,7 +25,7 @@ THIS IMPLEMENTATION:
     Gate 5: tool_availability_check
     Gate 6: resource_budget_check
 
-RULES (from AOS spec):
+RULES (from InfraRely spec):
   RULE 4 — PLANNING IS NOT EXECUTION
     Plans are generated once, compiled once, validated once.
     Execution is always deterministic after compilation.

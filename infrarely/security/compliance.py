@@ -1,5 +1,5 @@
 """
-aos/compliance.py — Immutable Compliance Audit Log
+infrarely/compliance.py — Immutable Compliance Audit Log
 ═══════════════════════════════════════════════════════════════════════════════
 SCALE GAP 4: Healthcare/finance-grade audit trail that cannot be altered.
 

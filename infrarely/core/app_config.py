@@ -6,6 +6,10 @@ All tuneable knobs live here so the rest of the codebase stays clean.
 import os
 from dataclasses import dataclass
 
+from infrarely.runtime.paths import LOG_DIR as RUNTIME_LOG_DIR
+from infrarely.runtime.paths import LOG_FILE as RUNTIME_LOG_FILE
+from infrarely.runtime.paths import TRACE_DIR as RUNTIME_TRACE_DIR
+
 # ─── LLM Backend ─────────────────────────────────────────────────────────────
 # Choose ONE backend by setting LLM_BACKEND:
 #
@@ -81,7 +85,7 @@ MAX_TRACE_FILES = 200  # Trace retention policy (Gap 3)
 # ─── Data Paths ──────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
-LOG_DIR = os.path.join(BASE_DIR, "logs")
+LOG_DIR = str(RUNTIME_LOG_DIR)
 
 PROFILE_FILE = os.path.join(DATA_DIR, "student_profiles.json")
 COURSES_FILE = os.path.join(DATA_DIR, "courses.json")
@@ -94,8 +98,8 @@ SUMMARY_FILE = os.path.join(DATA_DIR, "conversation_summaries.json")
 ENABLE_RICH_LOGGING = True
 LOG_LEVEL = "INFO"
 LOG_TO_FILE = True
-LOG_FILE = os.path.join(LOG_DIR, "agent.log")
-TRACE_DIR = os.path.join(LOG_DIR, "traces")
+LOG_FILE = str(RUNTIME_LOG_FILE)
+TRACE_DIR = str(RUNTIME_TRACE_DIR)
 # ── Layer 5: Adaptive Agent Intelligence ─────────────────────────────────
 ENABLE_ADAPTIVE = True
 ADAPTIVE_ROUTING_OPTIMIZER = True

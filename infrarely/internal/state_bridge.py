@@ -1,7 +1,7 @@
 """
-aos/_internal/state_bridge.py — SDK ↔ State Machine bridge
+infrarely/_internal/state_bridge.py — SDK ↔ State Machine bridge
 ═══════════════════════════════════════════════════════════════════════════════
-Maps SDK agent states to AOS AgentCognitiveState.
+Maps SDK agent states to InfraRely AgentCognitiveState.
 Manages state transitions, checkpoints, crash recovery.
 """
 
@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional
 
 
 class AgentState(Enum):
-    """SDK-level agent states (maps to AOS AgentCognitiveState)."""
+    """SDK-level agent states (maps to InfraRely AgentCognitiveState)."""
 
     IDLE = "IDLE"
     PLANNING = "PLANNING"

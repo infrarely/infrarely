@@ -65,6 +65,7 @@ logs/
 # ═══════════════════════════════════════════════════════════════════════════════
 # InfraRely runtime artifacts
 # ═══════════════════════════════════════════════════════════════════════════════
+.infrarely/
 .infrarely_versions/
 .infrarely_packages/
 .aos_versions/

@@ -1,5 +1,5 @@
 """
-aos/integrations/notion.py — Notion Integration
+infrarely/integrations/notion.py — Notion Integration
 """
 
 from __future__ import annotations

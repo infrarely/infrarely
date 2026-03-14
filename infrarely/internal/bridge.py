@@ -1,7 +1,7 @@
 """
-aos/_internal/bridge.py — Main SDK ↔ AOS Infrastructure Bridge
+infrarely/_internal/bridge.py — Main SDK ↔ InfraRely Infrastructure Bridge
 ═══════════════════════════════════════════════════════════════════════════════
-Connects SDK's clean API surface to the AOS 7-layer infrastructure.
+Connects SDK's clean API surface to the InfraRely 7-layer infrastructure.
 Developers never import this. SDK does it internally.
 
 This bridge resolves goals using:
@@ -543,33 +543,43 @@ def _call_llm(prompt: str, system: str = "", max_tokens: int = 512) -> Dict[str,
     logger = get_logger()
     start = time.monotonic()
 
-    messages = []
-    if system:
-        messages.append({"role": "system", "content": system})
-    messages.append({"role": "user", "content": prompt})
+    messages = [{"role": "user", "content": prompt}]
 
     try:
-        if provider == "openai":
-            return _call_openai(api_key, model, messages, max_tokens, temperature)
-        elif provider == "anthropic":
-            return _call_anthropic(
-                api_key, model, system, prompt, max_tokens, temperature
-            )
-        elif provider == "groq":
-            return _call_groq(api_key, model, messages, max_tokens, temperature)
-        elif provider == "gemini":
-            return _call_gemini(api_key, model, prompt, max_tokens, temperature)
-        elif provider in ("ollama", "local"):
+        if provider in ("ollama", "local"):
             return _call_ollama(
-                model, messages, max_tokens, temperature, cfg.get("llm_base_url")
+                model,
+                ([{"role": "system", "content": system}] if system else []) + messages,
+                max_tokens,
+                temperature,
+                cfg.get("llm_base_url"),
             )
-        else:
-            return {
-                "content": None,
-                "error": f"Unknown LLM provider: {provider}",
-                "tokens": 0,
-                "duration_ms": 0,
-            }
+
+        llm = cfg.get("llm")
+        if llm is None:
+            from infrarely.llm.registry import load_provider
+
+            llm = load_provider(
+                provider,
+                api_key,
+                model,
+                base_url=cfg.get("llm_base_url"),
+            )
+            cfg.set("llm", llm)
+
+        text, tokens = llm.chat(
+            messages=messages,
+            system=system,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+        elapsed = (time.monotonic() - start) * 1000
+        return {
+            "content": text,
+            "error": None,
+            "tokens": tokens,
+            "duration_ms": elapsed,
+        }
     except Exception as e:
         elapsed = (time.monotonic() - start) * 1000
         logger.error(f"LLM call failed: {e}", provider=provider)
@@ -725,7 +735,7 @@ def _call_ollama(model, messages, max_tokens, temperature, base_url=None):
 
 class ExecutionEngine:
     """
-    Executes a goal through the AOS pipeline:
+    Executes a goal through the InfraRely pipeline:
       1. Knowledge check (bypass LLM if high confidence)
       2. Intent classification (deterministic routing)
       3. Tool execution (if matched)
@@ -754,7 +764,7 @@ class ExecutionEngine:
 
     def execute(self, goal: str, context: Optional[Any] = None) -> Result:
         """
-        Execute a goal through the full AOS pipeline.
+        Execute a goal through the full InfraRely pipeline.
 
         Pipeline order (critical — do NOT reorder):
           1. Intent classification (math, tool match, capability)
@@ -906,7 +916,10 @@ class ExecutionEngine:
                     self._metrics.record_tool_call(intent["name"], tool_elapsed, True)
 
                     # Check if tool returned an error
-                    if isinstance(tool_result, dict) and tool_result.get("__aos_error"):
+                    if isinstance(tool_result, dict) and (
+                        tool_result.get("__infrarely_error")
+                        or tool_result.get("__aos_error")
+                    ):
                         raise Exception(tool_result.get("message", "Tool failed"))
 
                     # If tool result is a complete answer, return directly

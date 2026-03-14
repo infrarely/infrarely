@@ -21,8 +21,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 import infrarely.core.app_config as config
 from infrarely.observability import logger
+from infrarely.runtime.paths import ANALYTICS_DIR
 
-_ANALYTICS_DIR = os.path.join(config.LOG_DIR, "analytics")
+_ANALYTICS_DIR = str(ANALYTICS_DIR)
 os.makedirs(_ANALYTICS_DIR, exist_ok=True)
 
 

@@ -91,7 +91,7 @@ from infrarely.runtime.negotiation_protocol import NegotiationProtocol
 from infrarely.runtime.lifecycle_manager import LifecycleManager
 from infrarely.runtime.agent_monitoring import AgentMonitoring
 
-# ── AOS Capabilities ─────────────────────────────────────────────────────────
+# ── InfraRely Capabilities ─────────────────────────────────────────────────────────
 from infrarely.agent.state_machine import (
     AgentStateMachine,
     AgentCognitiveState,
@@ -187,20 +187,20 @@ class AgentCore:
         )
         self._rt_monitoring = AgentMonitoring()
 
-        # ── AOS Capability 1: Agent State Machine ─────────────────────────────
+        # ── InfraRely Capability 1: Agent State Machine ─────────────────────────────
         self._state_manager = StateMachineManager()
         self._agent_sm = self._state_manager.create_agent(
             agent_id=app_cfg.student_id,
         )
 
-        # ── AOS Capability 2: Deterministic Planning Engine ───────────────────
+        # ── InfraRely Capability 2: Deterministic Planning Engine ───────────────────
         self._planning_engine = DeterministicPlanningEngine(
             capability_registry=None,  # populated in wire_capabilities()
             tool_registry=registry,
             token_budget_limit=config.TOKEN_DAILY_BUDGET,
         )
 
-        # ── AOS Capability 3: Knowledge Layer ─────────────────────────────────
+        # ── InfraRely Capability 3: Knowledge Layer ─────────────────────────────────
         import os as _os
 
         _data_dir = _os.path.join(
@@ -233,7 +233,7 @@ class AgentCore:
         )
 
         logger.info(
-            "AgentCore ready (v6 full pipeline + adaptive + runtime + AOS)",
+            "AgentCore ready (v6 full pipeline + adaptive + runtime + InfraRely)",
             agent=app_cfg.student_id,
             backend=config.LLM_BACKEND,
             model=config.LLM_MODEL,
@@ -277,7 +277,7 @@ class AgentCore:
         if evicted:
             self._ltmem.compress_and_store(self._cfg.student_id, [evicted])
 
-        # ── AOS: State Machine → PLANNING ─────────────────────────────────────
+        # ── InfraRely: State Machine → PLANNING ─────────────────────────────────────
         try:
             self._agent_sm.set_goal({"query": user_input[:200]})
             self._agent_sm.transition(
@@ -296,7 +296,7 @@ class AgentCore:
         except Exception:
             pass  # non-blocking
 
-        # ── AOS: Knowledge Layer — RULE 3: Knowledge before generation ────────
+        # ── InfraRely: Knowledge Layer — RULE 3: Knowledge before generation ────────
         knowledge_result = None
         knowledge_action = "no_knowledge"
         try:
@@ -405,7 +405,7 @@ class AgentCore:
         plan = None
         tool_result = None
 
-        # ── AOS: Knowledge bypass gate ────────────────────────────────────────
+        # ── InfraRely: Knowledge bypass gate ────────────────────────────────────────
         # If knowledge confidence >= 0.85 AND authoritative → skip LLM entirely
         if knowledge_action == "bypass_llm" and knowledge_result:
             # Compose direct answer from knowledge chunks
@@ -437,7 +437,7 @@ class AgentCore:
                 execution_ms=round(total_ms, 1),
             )
 
-        # ── AOS: State Machine → EXECUTING ────────────────────────────────────
+        # ── InfraRely: State Machine → EXECUTING ────────────────────────────────────
         try:
             self._agent_sm.set_plan(
                 {"intent": task_state.task, "tool": task_state.tool}
@@ -596,7 +596,7 @@ class AgentCore:
             if capability_result is None:
                 self._budget.record(tokens_used, reason=task_state.task)
 
-        # ── AOS: State Machine → VERIFYING → COMPLETED/FAILED ─────────────
+        # ── InfraRely: State Machine → VERIFYING → COMPLETED/FAILED ─────────────
         try:
             self._agent_sm.advance_cursor()  # satisfy execution_has_results guard
             self._agent_sm.transition(AgentCognitiveState.VERIFYING)
@@ -917,9 +917,9 @@ class AgentCore:
             "plan_cache": self._cache.stats(),
         }
 
-    # ── AOS snapshot (for CLI) ────────────────────────────────────────────────
+    # ── InfraRely snapshot (for CLI) ────────────────────────────────────────────────
     def get_aos_snapshot(self) -> dict:
-        """Return a combined snapshot of all AOS capabilities."""
+        """Return a combined snapshot of all InfraRely capabilities."""
         sm_state = self._agent_sm.state
         return {
             "state_machine": {
@@ -983,7 +983,7 @@ class AgentCore:
                 0,
             )
 
-        # ── AOS: Knowledge grounding for LLM call ────────────────────────────
+        # ── InfraRely: Knowledge grounding for LLM call ────────────────────────────
         # If knowledge confidence >= 0.70, inject grounding into LLM prompt
         knowledge_result = getattr(self, "_last_knowledge_result", None)
         if knowledge_result and knowledge_result.level == ConfidenceLevel.MEDIUM:

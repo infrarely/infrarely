@@ -1,5 +1,5 @@
 """
-aos/integrations/rest_api.py — Generic REST API Integration
+infrarely/integrations/rest_api.py — Generic REST API Integration
 """
 
 from __future__ import annotations

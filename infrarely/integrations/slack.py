@@ -1,7 +1,7 @@
 """
-aos/integrations/slack.py — Slack Integration
+infrarely/integrations/slack.py — Slack Integration
 ═══════════════════════════════════════════════════════════════════════════════
-Pre-built Slack tools for AOS agents.
+Pre-built Slack tools for InfraRely agents.
 
 Usage::
 

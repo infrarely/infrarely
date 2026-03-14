@@ -1,5 +1,5 @@
 """
-aos/validation.py — Tool Schema Validation & Type Safety
+infrarely/validation.py — Tool Schema Validation & Type Safety
 ═══════════════════════════════════════════════════════════════════════════════
 Automatic validation that tool inputs and outputs match their declared types.
 

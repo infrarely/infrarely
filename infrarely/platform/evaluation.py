@@ -1,5 +1,5 @@
 """
-aos/evaluation.py — Agent Evaluation & Regression Testing Framework
+infrarely/evaluation.py — Agent Evaluation & Regression Testing Framework
 ═══════════════════════════════════════════════════════════════════════════════
 Built-in way to test whether agents give correct answers after changes.
 

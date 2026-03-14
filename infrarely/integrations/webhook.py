@@ -1,5 +1,5 @@
 """
-aos/integrations/webhook.py — Webhook Integration
+infrarely/integrations/webhook.py — Webhook Integration
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ class WebhookIntegration(Integration):
         # Add signature if secret is configured
         if self._secret:
             sig = hmac.new(self._secret.encode(), body, hashlib.sha256).hexdigest()
-            req_headers["X-AOS-Signature"] = f"sha256={sig}"
+            req_headers["X-InfraRely-Signature"] = f"sha256={sig}"
 
         req = urllib.request.Request(url, data=body, headers=req_headers, method="POST")
         try:

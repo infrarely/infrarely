@@ -73,7 +73,15 @@ Shutdown::
 
 from __future__ import annotations
 
-__version__ = "0.1.0"
+try:
+    from importlib.metadata import (
+        version as _pkg_version,
+        PackageNotFoundError as _PkgNotFound,
+    )
+
+    __version__ = _pkg_version("infrarely")
+except Exception:
+    __version__ = "0.0.0"
 __all__ = [
     # Core
     "agent",

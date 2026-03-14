@@ -1,5 +1,5 @@
 """
-aos/streaming.py — Streaming Response Support
+infrarely/streaming.py — Streaming Response Support
 ═══════════════════════════════════════════════════════════════════════════════
 Token-by-token output streaming for real-time UIs.
 
