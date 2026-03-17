@@ -6,36 +6,107 @@
 
 # InfraRely
 
-**Reliable Agent Infrastructure — Production-grade AI agent framework with zero boilerplate.**
+You shipped an AI agent last week.
+
+It worked in testing.  
+It worked in the demo.  
+It worked the first three times in production.
+
+Then it didn't.
+
+Same input. Different output. No error. No log. No trace.  
+Just a wrong answer — confidently delivered.
+
+You spent 6 hours debugging a system that doesn't tell you what it did or why.
+
+**That's not an AI problem. That's an infrastructure problem.**
 
 ---
 
-## Why InfraRely?
+## You've already felt this
 
-Most AI agents today are unreliable when they move from demos to production.
+Be honest. Have you ever:
 
-### Common Problems
-- **Non-deterministic execution** — behavior changes between runs, making debugging and incident response difficult
-- **Hallucination (tool + response)** — models invent tool names, parameters, outputs, or unsupported claims
-- **Poor observability** — limited traces make it hard to explain failures and regressions
-- **Fragile multi-agent coordination** — delegation and message passing break under real workload pressure
-- **Weak trust and accountability** — decisions are hard to audit, attribute, and defend in production
-- **Identity breakdown** — unclear agent identity/permissions lead to unsafe cross-agent actions
-- **Memory problems** — stale, conflicting, or ungrounded memory corrupts downstream decisions
+- Run the same prompt twice and gotten different results — and had no idea why
+- Watched your agent call a tool with parameters you never defined
+- Had a failure swallowed silently, only discovered downstream
+- Written `try/except` around an entire agent because you didn't trust it
+- Logged into production at 2am because your agent "just stopped working"
+- Said the words **"let me just re-run it"** and hoped for a different result
 
-InfraRely addresses these failures with infrastructure-first primitives:
-
-- **Deterministic execution contracts** — router-first control flow with frozen plans and explicit fallbacks
-- **Capability graphs** — dependency-aware workflows that compile and execute predictably
-- **Verification layers** — structural, logical, knowledge, and policy checks on every result
-- **Multi-agent runtime** — scheduler, message bus, shared memory, isolation, and deadlock-aware coordination
-- **Identity and memory controls** — runtime identity/permissions plus scoped memory discipline for safer coordination
-
-The result is an AI agent framework designed for reliability, auditability, and safe production deployment.
+If yes — you've already hit the ceiling of how agents are built today.
 
 ---
 
-## Quick Start
+## What's actually broken
+
+Every agent framework today is built around the same idea:
+
+> Give the LLM a prompt, some tools, and hope it makes good decisions.
+
+That worked fine for demos.
+
+In production, "hope" is not a reliability strategy.
+
+Here's what really happens:
+
+**Non-determinism.** The same input gives you different outputs on different runs. You can't reproduce bugs. You can't write stable tests. You can't explain to a stakeholder why the answer changed.
+
+**Silent failures.** The agent doesn't crash — it just does the wrong thing. Calls the wrong tool. Hallucinates a parameter. Returns a confident answer with no basis. You find out when a user complains, not when the system breaks.
+
+**No observability.** You can log the input and the final output. Everything in between is a black box. When something goes wrong, you're reading prompt text trying to reverse-engineer what happened.
+
+**Tool chaos.** You give your agent 8 tools. It calls them in the wrong order. It invents arguments. It calls tools it shouldn't for the context it's in. You add more instructions to the prompt. It gets worse.
+
+**Memory corruption.** One agent's context bleeds into another. Stale state from a previous run influences the current one. You build workarounds. The workarounds have bugs.
+
+**It doesn't get better with more prompting.** You can't instruction-engineer your way out of an infrastructure problem.
+
+---
+
+## The industry's answer is wrong
+
+The current playbook:
+
+```
+Agent breaks → add more instructions → test again → breaks differently → add more instructions
+```
+
+Every failure becomes a prompt patch.  
+Every prompt patch is a hidden dependency.  
+Every hidden dependency is a future incident.
+
+You end up with a system that works until someone changes the prompt, rotates the model version, or sends an input you didn't anticipate.
+
+This isn't engineering. It's archaeology — digging through inference outputs hoping to find what went wrong.
+
+---
+
+## InfraRely
+
+InfraRely is **deterministic agent infrastructure**.
+
+Not a new framework.  
+Not a better prompt template.  
+Not another abstraction over the OpenAI API.
+
+A **control layer** — between your application and the LLM — that enforces how agents plan, route, execute, and verify.
+
+The LLM is still there. It's just no longer in charge of everything.
+
+```
+Prompt → Hope → Retry → Patch → Repeat  (today)
+
+Define → Control → Execute → Verify → Trust  (InfraRely)
+```
+
+---
+
+## Get started in 60 seconds
+
+```bash
+pip install infrarely
+```
 
 ```python
 import infrarely
@@ -44,15 +115,146 @@ infrarely.configure(llm_provider="openai", api_key="sk-...")
 
 agent = infrarely.agent("helper")
 result = agent.run("What is 2+2?")
-print(result.output)  # 4 (no LLM call — deterministic math)
+
+print(result.output)   # 4  — no LLM call, deterministic math
+print(result.trace)    # full execution trace, always
+print(result.error)    # None — errors are data, never exceptions
 ```
 
-### Install
+That last line matters. **Errors are data.** You always get a structured result back — success or failure. No bare exceptions. No silent wrong answers. No guessing.
+
+---
+
+## What changes
+
+### Your agent stops guessing which tool to call
+
+InfraRely uses a router-first execution model. Tools are matched to intent by structured rules before the LLM is ever consulted. The LLM is the last resort — not the first.
+
+```python
+@infrarely.tool
+def get_order_status(order_id: str) -> dict:
+    return db.query("SELECT * FROM orders WHERE id = ?", order_id)
+
+agent = infrarely.agent("support-bot", tools=[get_order_status])
+result = agent.run("What's the status of order #1042?")
+# Tool is called with validated, typed params — not hallucinated ones
+```
+
+### Your workflows stop being prompt chains
+
+Stop chaining prompts and hoping context carries through. Define actual dependency graphs.
+
+```python
+wf = infrarely.workflow("report-pipeline", steps=[
+    infrarely.step("fetch",   fetch_data),
+    infrarely.step("process", clean_and_transform, depends_on=["fetch"]),
+    infrarely.step("report",  generate_report,     depends_on=["process"]),
+])
+
+results = wf.execute()
+# Steps execute in order, dependencies guaranteed, failures isolated
+```
+
+### Your knowledge base is consulted before the LLM
+
+```python
+agent = infrarely.agent("docs-agent")
+agent.knowledge.add_documents("./product-docs/")
+
+result = agent.run("What's the refund policy?")
+# Answer comes from your documents — not from what the LLM guesses
+# LLM is only called if confidence < 85%
+```
+
+### Multi-agent coordination without chaos
+
+```python
+researcher = infrarely.agent("researcher")
+writer     = infrarely.agent("writer")
+
+facts   = researcher.run("Summarize Q3 metrics")
+article = writer.run("Draft exec summary", context=facts)
+# Isolated agents, explicit message passing, no memory bleed
+```
+
+### You can ship human-in-the-loop without hacking
+
+```python
+agent.require_approval_for("send_email", auto_approve_after=300)
+result = agent.run("Send onboarding email to new users")
+# Execution pauses. Waits for approval. Resumes on confirmation.
+```
+
+---
+
+## Everything is traced. Always.
+
+Every agent run produces a full execution trace — what was considered, what was routed, what was called, what was verified, what was returned.
+
+No more reading logs hoping to piece together what happened.  
+No more re-running to reproduce a failure.  
+No more "it works on my machine."
+
+```bash
+infrarely metrics   # live agent performance
+infrarely health    # system status
+infrarely verify    # run verification checks
+```
+
+---
+
+## Architecture
+
+```
+Applications
+     |
+  Agents
+     |
+InfraRely Control Plane
+  |-- Planning Engine
+  |-- Capability Graph
+  |-- Tool Router
+  |-- Verification Layer
+  |-- Memory System
+  |-- Security (injection defense, sandboxing, audit logs)
+  |-- Observability (traces, metrics, telemetry)
+     |
+Runtime (Scheduling, Isolation, Scaling)
+     |
+External APIs / LLMs / Databases
+```
+
+The LLM sits at the bottom — consulted only after every other resolution path is exhausted.
+
+---
+
+## LLM Providers
+
+| Provider | Models |
+|---|---|
+| OpenAI | gpt-4o, gpt-4o-mini |
+| Anthropic | claude-sonnet-4-20250514 |
+| Groq | llama-3.1-8b-instant |
+| Google Gemini | gemini-1.5-flash |
+| Ollama | local models (llama3.2, etc.) |
+
+```python
+infrarely.configure(
+    llm_provider="anthropic",
+    api_key="sk-ant-...",
+    knowledge_threshold=0.85,
+    token_budget=10_000,
+)
+```
+
+---
+
+## Install
 
 ```bash
 pip install infrarely
 
-# With LLM provider extras:
 pip install infrarely[openai]
 pip install infrarely[anthropic]
 pip install infrarely[all-providers]
@@ -60,234 +262,23 @@ pip install infrarely[all-providers]
 
 ---
 
-## Features
+## Status
 
-### Core Framework
-- **3-line start** — `import infrarely` → `agent()` → `run()`
-- **Errors-as-data** — `Result` objects with `.error`, never bare exceptions
-- **LLM-as-last-resort** — Knowledge → Math → Tools → Capabilities → LLM
-- **Observable by default** — traces, metrics, health checks on every agent
+Early stage. Actively built.
 
-### 7-Layer Architecture
+If you've been burned by the problems above — try it, break it, and tell me what's missing.  
+Every piece of feedback from the first 50 developers will directly shape what gets built next.
 
-| Layer | Name | Description |
-|-------|------|-------------|
-| 1 | **Execution Contracts** | Deterministic routing, frozen execution plans, three-gate LLM isolation |
-| 2 | **Capability Graphs** | Multi-step workflows with dependency resolution |
-| 3 | **Infrastructure** | Execution depth guard, permissions, tool validation, sandboxing |
-| 4 | **Verification** | Structural/logical/knowledge/policy checks on every result |
-| 5 | **Adaptive Intelligence** | Self-optimizing routing, failure analysis, token optimization |
-| 6 | **Multi-Agent Runtime** | OS-like kernel — scheduler, IPC, shared memory, RBAC, deadlock detection |
-| 7 | **Autonomous Evolution** | Performance analysis, A/B testing, architecture proposals with policy guards |
-
-### Tools & Knowledge
-
-```python
-@infrarely.tool
-def weather(city: str) -> str:
-    return f"Sunny in {city}"
-
-agent = infrarely.agent("bot", tools=[weather])
-result = agent.run("Weather in NYC?")
-```
-
-```python
-agent = infrarely.agent("tutor")
-agent.knowledge.add_documents("./notes/")
-result = agent.run("Explain photosynthesis")
-# LLM bypassed if knowledge confidence >= 85%
-```
-
-### Multi-Agent
-
-```python
-researcher = infrarely.agent("researcher")
-writer = infrarely.agent("writer")
-facts = researcher.run("Find facts about Mars")
-article = writer.run("Write article", context=facts)
-```
-
-### Workflows (DAG)
-
-```python
-wf = infrarely.workflow("pipeline", steps=[
-    infrarely.step("fetch", fetch_data),
-    infrarely.step("process", process, depends_on=["fetch"]),
-    infrarely.step("report", generate_report, depends_on=["process"]),
-])
-results = wf.execute()
-```
-
-### Streaming
-
-```python
-for chunk in agent.stream("Write a poem"):
-    print(chunk.text, end="", flush=True)
-```
-
-### Security
-
-- Prompt injection defense (7 injection types)
-- Input sanitization (always-on)
-- API key rotation
-- Tool execution sandboxing
-- Compliance audit logging
-
-### Human-in-the-Loop
-
-```python
-agent.require_approval_for("send_email", auto_approve_after=300)
-result = agent.run("Send welcome email")
-# Pauses for human approval
-```
-
-### CLI
-
-```bash
-infrarely run "What is 2+2?"
-infrarely health
-infrarely metrics
-infrarely deploy
-infrarely verify
-```
+Open an issue. Start a discussion.
 
 ---
 
-## InfraRely Architecture
+## Contributing
 
-```
-                          Applications
-                               │
-                               │
-                        AI Agents Layer
-                 (Custom Agents Built by Developers)
-                               │
-                               │
-                    InfraRely Agent Control Plane
-            ┌─────────────────────────────────────────┐
-            │                                         │
-            │  Agent Pipeline                         │
-            │  • Planning Engine                      │
-            │  • Capability Graph                     │
-            │  • Tool Router                          │
-            │  • Verification Layer                   │
-            │                                         │
-            │  Platform Services                      │
-            │  • Memory System                        │
-            │  • Knowledge Engine                     │
-            │  • Workflow DAG Engine                  │
-            │  • Capability Registry                  │
-            │                                         │
-            │  Reliability Systems                    │
-            │  • Retry & Circuit Breakers             │
-            │  • Token Optimization                   │
-            │  • Failure Recovery                     │
-            │  • Self-Healing Execution               │
-            │                                         │
-            │  Observability                          │
-            │  • Execution Traces                     │
-            │  • Metrics & Telemetry                  │
-            │  • Token Budget Monitoring              │
-            │                                         │
-            │  Security                               │
-            │  • Input Sanitization                   │
-            │  • Tool Sandbox                         │
-            │  • Permission Policies                  │
-            │  • Compliance Logging                   │
-            └─────────────────────────────────────────┘
-                               │
-                               │
-                       InfraRely Runtime
-              (Scheduling, Isolation, State, Scaling)
-                               │
-                               │
-                     External Systems / APIs
-       Databases • SaaS APIs • Filesystems • LLM Providers
-```
+If you care about reliability over hype, control over magic, and software that behaves like software — this is worth contributing to.
 
-## Architecture
-
-InfraRely is structured as a layered **Agent Operating System**.
-
-1. **Applications**
-   - Developer-built AI applications.
-
-2. **Agents**
-   - Logical workers that execute tasks and coordinate tools.
-
-3. **InfraRely Control Plane**
-   - Planning, routing, verification, and reliability systems.
-
-4. **Runtime**
-   - Execution environment responsible for scheduling, isolation, and scalability.
-
-5. **External Systems**
-   - APIs, databases, and LLM providers used by agents.
-
-### Project Structure
-
-```
-infrarely/
-├── core/           # Agent, Result, Config, Events, Decorators, Streaming
-├── runtime/        # Workflow DAG, async runner, sandbox, scaling, multi-agent kernel
-├── router/         # Rule-based intent classification, tool routing
-├── agent/          # Execution pipeline, state machine, planning, verification
-├── memory/         # Agent memory, knowledge engine, working/structured/long-term
-├── security/       # Prompt injection defense, compliance, input sanitization
-├── observability/  # Metrics, traces, logging, dashboard
-├── optimization/   # Self-optimizing routing, failure analysis, token optimization
-├── learning/       # A/B testing, architecture proposals, policy guards
-├── platform/       # HITL, evaluation, versioning, marketplace, multitenancy, ACP
-├── tools/          # Tool base classes, registry
-├── capabilities/   # Multi-step capability definitions
-├── integrations/   # GitHub, Gmail, Slack, Postgres, Notion, Webhooks, REST
-├── internal/       # Execution engine bridges (private)
-└── cli/            # CLI interface
-```
-
-## LLM Providers
-
-| Provider | Model | Setup |
-|----------|-------|-------|
-| OpenAI | gpt-4o, gpt-4o-mini | `infrarely.configure(llm_provider="openai", api_key="sk-...")` |
-| Anthropic | claude-sonnet-4-20250514 | `infrarely.configure(llm_provider="anthropic", api_key="...")` |
-| Groq | llama-3.1-8b-instant | `infrarely.configure(llm_provider="groq", api_key="...")` |
-| Google Gemini | gemini-1.5-flash | `infrarely.configure(llm_provider="gemini", api_key="...")` |
-| Ollama | llama3.2 (local) | `infrarely.configure(llm_provider="ollama")` |
-
-## Configuration
-
-```python
-infrarely.configure(
-    llm_provider="openai",
-    api_key="sk-...",
-    llm_model="gpt-4o",
-    knowledge_threshold=0.85,
-    token_budget=10_000,
-    log_level="INFO",
-    max_agents=50,
-)
-```
-
-Or via environment variables:
-```bash
-export INFRARELY_LLM_PROVIDER=openai
-export INFRARELY_API_KEY=sk-...
-```
-
-## Documentation
-
-- [Quickstart](docs/quickstart.md)
-- [Core Concepts](docs/concepts.md)
-- [Architecture](docs/architecture.md)
-- [API Reference](docs/api_reference.md)
-- [Vision](docs/vision.md)
-- [Runtime](docs/runtime.md)
-- [Security Model](docs/security_model.md)
-- [Multi-Agent Runtime](docs/multi_agent.md)
-- [Verification](docs/verification.md)
-- [Observability](docs/observability.md)
+---
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+[MIT](https://opensource.org/licenses/MIT)
