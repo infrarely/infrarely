@@ -331,86 +331,9 @@ class FrameworkBaseline:
         }
 
 
-# Published / estimated baselines for common frameworks
-# Sources: public benchmarks, community reports, our testing
-_FRAMEWORK_BASELINES: Dict[str, FrameworkBaseline] = {
-    "langchain": FrameworkBaseline(
-        framework="LangChain",
-        version="0.1.x",
-        metrics={
-            "task_completion_rate": 0.912,
-            "hallucination_rate": 0.084,
-            "llm_bypass_rate": 0.05,
-            "crash_recovery_rate": 0.61,
-            "avg_latency_ms": 1850.0,
-            "p95_latency_ms": 4200.0,
-            "cost_per_1000_tasks": 2.40,
-            "score": 72.0,
-        },
-        source="Community benchmarks & published reports",
-    ),
-    "crewai": FrameworkBaseline(
-        framework="CrewAI",
-        version="0.28.x",
-        metrics={
-            "task_completion_rate": 0.887,
-            "hallucination_rate": 0.092,
-            "llm_bypass_rate": 0.03,
-            "crash_recovery_rate": 0.55,
-            "avg_latency_ms": 2100.0,
-            "p95_latency_ms": 5100.0,
-            "cost_per_1000_tasks": 3.10,
-            "score": 66.0,
-        },
-        source="Community benchmarks & published reports",
-    ),
-    "autogpt": FrameworkBaseline(
-        framework="AutoGPT",
-        version="0.5.x",
-        metrics={
-            "task_completion_rate": 0.764,
-            "hallucination_rate": 0.127,
-            "llm_bypass_rate": 0.01,
-            "crash_recovery_rate": 0.42,
-            "avg_latency_ms": 3500.0,
-            "p95_latency_ms": 8200.0,
-            "cost_per_1000_tasks": 5.80,
-            "score": 52.0,
-        },
-        source="Community benchmarks & published reports",
-    ),
-    "autogen": FrameworkBaseline(
-        framework="AutoGen",
-        version="0.2.x",
-        metrics={
-            "task_completion_rate": 0.935,
-            "hallucination_rate": 0.071,
-            "llm_bypass_rate": 0.04,
-            "crash_recovery_rate": 0.58,
-            "avg_latency_ms": 1600.0,
-            "p95_latency_ms": 3800.0,
-            "cost_per_1000_tasks": 2.10,
-            "score": 75.0,
-        },
-        source="Community benchmarks & published reports",
-    ),
-    "dspy": FrameworkBaseline(
-        framework="DSPy",
-        version="2.x",
-        metrics={
-            "task_completion_rate": 0.941,
-            "hallucination_rate": 0.063,
-            "llm_bypass_rate": 0.08,
-            "crash_recovery_rate": 0.50,
-            "avg_latency_ms": 1400.0,
-            "p95_latency_ms": 3200.0,
-            "cost_per_1000_tasks": 1.90,
-            "score": 77.0,
-        },
-        source="Community benchmarks & published reports",
-    ),
-}
-
+# Framework baseline comparisons removed pending proper citation and
+# independent verification. Do not add estimated or unverified numbers here.
+_FRAMEWORK_BASELINES: Dict[str, FrameworkBaseline] = {}
 
 def get_baseline(framework: str) -> Optional[FrameworkBaseline]:
     """Get a known framework baseline."""
