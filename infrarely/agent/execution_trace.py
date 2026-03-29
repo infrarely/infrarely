@@ -228,7 +228,7 @@ class ExecutionTrace:
             if step.error:
                 lines.append(f"│     error: {step.error} ✗")
             if step.skipped:
-                lines.append(f"│     status: skipped")
+                lines.append("│     status: skipped")
 
         # ── LLM calls ────────────────────────────────────────────────────────
         if self.llm_calls > 0:
