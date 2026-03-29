@@ -117,7 +117,12 @@ agent = infrarely.agent("helper")
 result = agent.run("What is 2+2?")
 
 print(result.output)   # 4  — no LLM call, deterministic math
-print(result.trace)    # full execution trace, always
+print(result.trace)    # full execution trace:
+                       # ┌─ Run: trace_abc123 [42ms]
+                       # │  Input: "What is 2+2?"
+                       # ├─ [1] Knowledge Lookup [5ms]
+                       # ├─ [2] Tool Execution: math_eval [35ms]
+                       # └─ Result: ✓ SUCCESS · 1 tool...
 print(result.error)    # None — errors are data, never exceptions
 ```
 
@@ -125,20 +130,65 @@ That last line matters. **Errors are data.** You always get a structured result 
 
 ---
 
+## Documentation
+
+| Topic | Link |
+|---|---|
+| Quick start | [docs/quickstart.md](./docs/quickstart.md) |
+| Core concepts | [docs/concepts.md](./docs/concepts.md) |
+| API reference | [docs/api_reference.md](./docs/api_reference.md) |
+| Architecture | [docs/architecture.md](./docs/architecture.md) |
+| Observability & traces | [docs/observability.md](./docs/observability.md) |
+| Verification & validation | [docs/verification.md](./docs/verification.md) |
+| Multi-agent orchestration | [docs/multi_agent.md](./docs/multi_agent.md) |
+| Security model | [docs/security_model.md](./docs/security_model.md) |
+| Runtime environment | [docs/runtime.md](./docs/runtime.md) |
+| Migration guides | [docs/migration/](./docs/migration/) |
+| Project vision | [docs/vision.md](./docs/vision.md) |
+
+---
+
+## Result object
+
+Every `agent.run()` returns a structured `Result` — never a raw exception:
+
+```python
+result = agent.run("What's the status of order #1042?")
+
+result.output        # str   — the agent's response
+result.error         # str | None — None on success, structured message on failure
+result.trace         # Trace — call .render() for human-readable output
+result.cost          # float — USD cost of this run
+result.tokens        # int   — total tokens used
+result.tool_calls    # list[ToolCall] — tools invoked, in order
+result.llm_calls     # int   — how many times LLM was actually consulted
+result.duration_ms   # int   — total wall-clock time
+```
+
+---
+
 ## What changes
 
 ### Your agent stops guessing which tool to call
 
-InfraRely uses a router-first execution model. Tools are matched to intent by structured rules before the LLM is ever consulted. The LLM is the last resort — not the first.
+InfraRely uses deterministic routing contracts. Tools are matched to intent by user-defined rules **before** the LLM is consulted. The LLM is the last resort — not the first.
 
 ```python
-@infrarely.tool
+@infrarely.tool(
+    route=infrarely.route(
+        match=["order", "status", "tracking"],
+        required_params=["order_id"],
+        param_types={"order_id": str},
+    )
+)
 def get_order_status(order_id: str) -> dict:
     return db.query("SELECT * FROM orders WHERE id = ?", order_id)
 
 agent = infrarely.agent("support-bot", tools=[get_order_status])
 result = agent.run("What's the status of order #1042?")
-# Tool is called with validated, typed params — not hallucinated ones
+# ✓ Tool routing is deterministic (rule-based, not LLM-guessed)
+# ✓ Parameters are validated against the route contract
+# ✓ No hallucinated parameters
 ```
 
 ### Your workflows stop being prompt chains
