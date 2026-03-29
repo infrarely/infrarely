@@ -8,6 +8,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > Note: Repository history was consolidated during v0.1.7 restructure.
 > All code is intact. Version history documented below.
 
+## v0.1.7 - 2026-03-29
+
+### Added
+- **Deterministic Routing Contracts**: User-definable `@infrarely.route()` for tool matching
+  - Match keywords define when a tool is routed
+  - Required parameters validation before execution
+  - Type-safe parameter enforcement
+  - Fallback strategy control (LLM_RESOLVE, named tool, or FAIL)
+- **Visual Execution Traces**: ASCII-formatted trace rendering
+  - `result.trace` now shows formatted execution flow
+  - `ExecutionTrace.render()` produces readable box-drawing output
+  - Shows step timing, tool calls, parameters, and outcomes
+  - Human-readable without post-processing
+
+### Changed
+- **Tool decorator** now accepts `route=infrarely.route(...)` parameter
+- **Result.trace** property: Returns rendered trace string instead of just trace_id
+  - Backward compatible: falls back to trace_id if full trace unavailable
+- Updated README examples to show deterministic routing in action
+
+### What's working
+- Deterministic tool routing via user-defined contracts
+- Full visual execution traces with structured formatting
+- Type-safe parameter validation before tool execution
+- Agent creation and execution via infrarely.agent()
+- Three-scope memory system (session, permanent, shared)
+- Workflow DAG with dependency resolution and parallel execution
+- Prompt injection detection and input sanitization
+- Multi-agent delegation and broadcast
+- LLM providers: OpenAI, Anthropic, Groq, Gemini, Ollama
+
+### Known limitations
+- No replay system (v0.2.0)
+- Runtime guardrail violations not fully structured (v0.2.0)
+
 ## v0.1.6 - 2026-03-29
 
 ### What's working
@@ -19,9 +54,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - LLM providers: OpenAI, Anthropic, Groq, Gemini, Ollama
 
 ### Known limitations
-- Routing contracts are not user-definable yet (v0.1.7)
+- Routing contracts are not user-definable yet (v0.1.7) ✓ SHIPPED
 - No replay system (v0.1.7)
-- No visual execution trace (v0.1.7)
+- No visual execution trace (v0.1.7) ✓ SHIPPED
 - Runtime guardrail violations not structured (v0.1.7)
 
 ## [0.1.1] through [0.1.5] - 2026-03-12 to 2026-03-28

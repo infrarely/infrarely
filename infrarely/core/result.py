@@ -197,6 +197,7 @@ class Result:
     _agent_name: str = ""
     _plan_source: str = ""  # "deterministic" | "llm" | "cached"
     _metadata: Dict[str, Any] = field(default_factory=dict)
+    _trace_obj: Optional[Any] = None  # ExecutionTrace object (if available)
 
     # ── Token tracking ────────────────────────────────────────────────────────
     tokens_used: int = 0
@@ -221,8 +222,29 @@ class Result:
         return self.success
 
     @property
-    def trace(self) -> str:
-        """Backward-compatible alias used in quick-start snippets."""
+    def trace(self) -> Any:
+        """
+        Get the execution trace for this result.
+
+        If the full ExecutionTrace object is available, returns the rendered
+        trace string (nice ASCII art format).
+        Otherwise, returns the trace_id string for compatibility.
+
+        Examples::
+
+            result = agent.run("What's the status of order #1042?")
+
+            # New behavior (with full trace):
+            print(result.trace)  # outputs formatted ASCII trace
+
+            # Backward compat (trace_id only):
+            print(result.trace)  # outputs trace ID string
+            print(result.trace_id)  # always the raw ID
+        """
+        if self._trace_obj is not None:
+            # Full trace object available: render it
+            return self._trace_obj.render()
+        # Fallback: return just the trace_id for backward compat
         return self.trace_id
 
     # ── Explain — human-readable execution summary ────────────────────────────

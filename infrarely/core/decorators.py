@@ -156,6 +156,82 @@ class _ToolCache:
 
 
 @dataclass
+class Route:
+    """
+    Deterministic routing contract for a tool.
+
+    Defines **exactly** when and how a tool should be called — before the LLM.
+    Routes are evaluated by keyword matching on the goal; parameters are extracted
+    and validated before execution.
+
+    Example::
+
+        @infrarely.tool(
+            route=infrarely.route(
+                match=["order", "status", "track", "shipping"],
+                required_params=["order_id"],
+                param_types={"order_id": str},
+            )
+        )
+        def get_order_status(order_id: str) -> dict:
+            return db.query("SELECT * FROM orders WHERE id = ?", order_id)
+    """
+
+    match: List[str]  # keywords that trigger this tool (case-insensitive)
+    required_params: List[str] = field(
+        default_factory=list
+    )  # params that must be present
+    param_types: Dict[str, type] = field(
+        default_factory=dict
+    )  # strict type requirements
+    fallback: str = "LLM_RESOLVE"  # "LLM_RESOLVE" | tool_name | "FAIL"
+
+    def score(self, goal: str) -> float:
+        """
+        Score how well this route matches a goal.
+        Returns 0.0–1.0; 0.0 = no match, 1.0 = perfect match.
+        """
+        goal_lower = goal.lower()
+        matches = sum(1 for kw in self.match if kw.lower() in goal_lower)
+        if matches == 0:
+            return 0.0
+        return min(1.0, matches / len(self.match))
+
+
+def route(
+    match: List[str],
+    required_params: Optional[List[str]] = None,
+    param_types: Optional[Dict[str, type]] = None,
+    fallback: str = "LLM_RESOLVE",
+) -> Route:
+    """
+    Create a deterministic routing contract for a tool.
+
+    Parameters
+    ----------
+    match : List[str]
+        Keywords that trigger this tool (e.g. ["order", "status", "track"]).
+        Tool is routed if ALL keywords appear in the goal (case-insensitive).
+    required_params : List[str], optional
+        Parameters that must be extracted before tool execution.
+    param_types : Dict[str, type], optional
+        Type constraints for each parameter.
+    fallback : str
+        What to do if this route doesn't match: "LLM_RESOLVE", tool_name, or "FAIL".
+
+    Returns
+    -------
+    Route
+    """
+    return Route(
+        match=match,
+        required_params=required_params or [],
+        param_types=param_types or {},
+        fallback=fallback,
+    )
+
+
+@dataclass
 class ToolMeta:
     """Metadata for a registered tool."""
 
@@ -169,6 +245,7 @@ class ToolMeta:
     cache_ttl: int = 3600
     deterministic: bool = True
     tags: List[str] = field(default_factory=list)
+    route: Optional[Route] = None  # deterministic routing contract
     call_count: int = 0
     error_count: int = 0
     total_ms: float = 0.0
@@ -244,6 +321,7 @@ def tool(
     tags: Optional[List[str]] = None,
     rate_limit: int = 0,
     rate_window: float = 60.0,
+    route: Optional[Route] = None,
 ) -> Union[Callable, Callable[[Callable], Callable]]:
     """
     Decorator that registers a function as an InfraRely tool.
@@ -254,6 +332,15 @@ def tool(
 
         @infrarely.tool(retries=5, timeout=3000)
         def my_func(x: int) -> str: ...
+
+        @infrarely.tool(
+            route=infrarely.route(
+                match=["order", "status"],
+                required_params=["order_id"],
+                param_types={"order_id": str},
+            )
+        )
+        def get_order_status(order_id: str) -> dict: ...
     """
 
     def _wrap(func: Callable) -> Callable:
@@ -282,6 +369,7 @@ def tool(
             cache_ttl=cache_ttl,
             deterministic=deterministic,
             tags=tags or [],
+            route=route,
         )
 
         # ── Per-tool infrastructure ───────────────────────────────────────────

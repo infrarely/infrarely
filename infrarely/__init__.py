@@ -280,7 +280,7 @@ from infrarely.core.config import configure, get_config
 from infrarely.core.context import ContextStrategy, ContextWindowManager, OverflowAction
 
 # ─── Decorators ───────────────────────────────────────────────────────────────
-from infrarely.core.decorators import capability, tool
+from infrarely.core.decorators import Route, capability, tool
 
 # ─── Events & Webhooks ───────────────────────────────────────────────────
 from infrarely.core.events import (
@@ -653,17 +653,47 @@ def workflow(
 
 
 def route(
-    intent: str,
-    tool: str,
-    triggers: list[str],
-    response_type: ResponseType = ResponseType.DETERMINISTIC,
-    params: dict | None = None,
-) -> None:
-    """Register a deterministic routing rule for the intent classifier."""
-    register_route(
-        intent=intent,
-        tool=tool,
-        triggers=triggers,
-        response_type=response_type,
-        params=params,
-    )
+    match: list[str],
+    required_params: list[str] | None = None,
+    param_types: dict[str, type] | None = None,
+    fallback: str = "LLM_RESOLVE",
+) -> "Route":
+    """
+    Create a deterministic routing contract for a tool.
+
+    Use with @infrarely.tool decorator to define when and how a tool is routed.
+
+    Parameters
+    ----------
+    match : list[str]
+        Keywords that trigger this tool (e.g. ["order", "status", "track"]).
+        Tool is routed if keywords appear in the goal.
+    required_params : list[str], optional
+        Parameters that must be extracted before tool execution.
+    param_types : dict[str, type], optional
+        Type constraints for each parameter.
+    fallback : str
+        What to do if this route doesn't match: "LLM_RESOLVE", tool_name, or "FAIL".
+
+    Returns
+    -------
+    Route
+        A routing contract to pass to @infrarely.tool(route=...).
+
+    Example
+    -------
+    ::
+
+        @infrarely.tool(
+            route=infrarely.route(
+                match=["order", "status"],
+                required_params=["order_id"],
+                param_types={"order_id": str},
+            )
+        )
+        def get_order_status(order_id: str) -> dict:
+            return db.query("SELECT * FROM orders WHERE id = ?", order_id)
+    """
+    from infrarely.core.decorators import route as route_factory
+
+    return route_factory(match, required_params, param_types, fallback)

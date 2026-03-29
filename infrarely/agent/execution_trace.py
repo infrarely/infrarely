@@ -172,3 +172,100 @@ class ExecutionTrace:
             student_id=student_id,
             query=query,
         )
+
+    def render(self) -> str:
+        """
+        Render the execution trace as formatted ASCII art.
+
+        Example output:
+        ┌─ Run: support-bot [42ms] ──────────────────────────
+        │  Input: "What's the status of order #1042?"
+        │
+        ├─ [1] Intent Classification [0ms]
+        │     matched: get_order_status (score: 0.94)
+        │     rejected: search_web (score: 0.12)
+        │
+        ├─ [2] Parameter Extraction [5ms]
+        │     order_id = "1042" ✓ (type: str)
+        │
+        ├─ [3] Tool Execution: get_order_status [38ms]
+        │     status: "shipped"
+        │     tracking_number: "UPS-9283"
+        │
+        └─ Result: 1 tool call · 0 LLM calls · 42ms
+        """
+        lines: List[str] = []
+
+        # ── Header ────────────────────────────────────────────────────────────
+        header_line = f"┌─ Run: {self.run_id} [{self.total_ms:.0f}ms]"
+        padding = "─" * max(1, 50 - len(header_line))
+        lines.append(f"{header_line} {padding}")
+
+        # ── Input ────────────────────────────────────────────────────────────
+        query_short = self.query[:48] if len(self.query) > 48 else self.query
+        lines.append(f'│  Input: "{query_short}"')
+
+        if self.steps or self.llm_calls > 0 or self.errors:
+            lines.append("│")
+
+        # ── Steps ────────────────────────────────────────────────────────────
+        for i, step in enumerate(self.steps):
+            is_last_step = (
+                i == len(self.steps) - 1 and not self.llm_calls and not self.errors
+            )
+
+            prefix = "└─" if is_last_step else "├─"
+            step_title = (
+                f"[{i + 1}] {step.step}: {step.tool} [{step.duration_ms:.0f}ms]"
+            )
+            lines.append(f"{prefix} {step_title}")
+
+            # Step details
+            if step.contract:
+                lines.append(f"│     contract: {step.contract}")
+            if step.tokens > 0:
+                lines.append(f"│     tokens: {step.tokens}")
+            if step.error:
+                lines.append(f"│     error: {step.error} ✗")
+            if step.skipped:
+                lines.append(f"│     status: skipped")
+
+        # ── LLM calls ────────────────────────────────────────────────────────
+        if self.llm_calls > 0:
+            is_last = not self.errors
+            prefix = "└─" if is_last else "├─"
+            lines.append(f"{prefix} LLM Calls: {self.llm_calls} calls")
+
+        # ── Errors ───────────────────────────────────────────────────────────
+        if self.errors:
+            for i, error in enumerate(self.errors):
+                is_last = i == len(self.errors) - 1
+                prefix = "└─" if is_last else "├─"
+                lines.append(f"{prefix} Error: {error}")
+
+        # ── Footer ───────────────────────────────────────────────────────────
+        tool_count = len([s for s in self.steps if not s.skipped])
+        outcome_str = self.outcome.upper() if self.outcome else "UNKNOWN"
+        status_icon = "✓" if self.outcome == "success" else "✗"
+
+        footer = (
+            f"│ Result: {status_icon} {outcome_str} · "
+            f"{tool_count} tool{'s' if tool_count != 1 else ''} · "
+            f"{self.llm_calls} LLM call{'s' if self.llm_calls != 1 else ''} · "
+            f"{self.total_tokens} tokens · {self.total_ms:.0f}ms"
+        )
+
+        if not self.errors and not self.steps:
+            lines.append("└─ (no steps recorded)")
+        else:
+            lines.append(footer)
+
+        return "\n".join(lines)
+
+    def __str__(self) -> str:
+        """Print the trace as formatted ASCII art."""
+        return self.render()
+
+    def __repr__(self) -> str:
+        """Print the trace as formatted ASCII art."""
+        return self.render()
