@@ -16,11 +16,11 @@ The router decides:
 import functools
 from typing import Literal
 
+from config import build_llm
 from langchain_core.messages import AIMessage
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
 
-from infrarely.agent.state import AgentState
 from infrarely.agent.nodes import (
     MAX_TURNS,
     _has_tool_calls,
@@ -30,10 +30,9 @@ from infrarely.agent.nodes import (
     respond_node,
     verify_node,
 )
-from config import build_llm
+from infrarely.agent.state import AgentState
 from infrarely.memory.memory_manager import MemoryManager
 from infrarely.observability.logger import get_logger
-from infrarely.tools.registry import ToolRegistry
 
 log = get_logger("agent.graph")
 

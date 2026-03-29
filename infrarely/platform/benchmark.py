@@ -3,7 +3,7 @@ infrarely/benchmark.py — Agent Performance Benchmarking
 ═══════════════════════════════════════════════════════════════════════════════
 A public benchmark suite that proves InfraRely performance on standard tasks.
 
-    aos benchmark --vs langchain --tasks standard-suite-v1
+    infrarely benchmark --vs langchain --tasks standard-suite-v1
 
 Produces comparison tables:
 
@@ -32,15 +32,12 @@ from __future__ import annotations
 
 import json
 import math
-import os
 import statistics
 import threading
 import time
-import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONSTANTS
@@ -334,6 +331,7 @@ class FrameworkBaseline:
 # Framework baseline comparisons removed pending proper citation and
 # independent verification. Do not add estimated or unverified numbers here.
 _FRAMEWORK_BASELINES: Dict[str, FrameworkBaseline] = {}
+
 
 def get_baseline(framework: str) -> Optional[FrameworkBaseline]:
     """Get a known framework baseline."""
@@ -1211,7 +1209,7 @@ class BenchmarkReport:
         baselines: Optional[List["FrameworkBaseline"]] = None,
     ) -> None:
         self._use_color = use_color
-        self._aos_metrics = infrarely_metrics
+        self._infrarely_metrics = infrarely_metrics
         self._baselines = baselines or []
 
     def _c(self, code: str) -> str:
@@ -1245,7 +1243,7 @@ class BenchmarkReport:
         """
         # Fall back to stored values from __init__
         if infrarely_metrics is None:
-            infrarely_metrics = self._aos_metrics
+            infrarely_metrics = self._infrarely_metrics
         if baselines is None:
             baselines = self._baselines
         if infrarely_metrics is None:
@@ -1398,7 +1396,7 @@ class BenchmarkReport:
         lines.append("")
 
         # Category breakdown
-        if aos_metrics.category_scores:
+        if infrarely_metrics.category_scores:
             lines.append(f"  {b}Category Scores:{r}")
             for cat, cscore in sorted(infrarely_metrics.category_scores.items()):
                 bar_len = int(cscore / 5)

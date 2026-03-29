@@ -76,7 +76,7 @@ class TestDelegation:
         agent = infrarely.agent("delegate_bad")
         result = agent.delegate("not_an_agent", "do something")
         assert not result.success
-        assert result.error.type == aos.ErrorType.DELEGATION_FAILED
+        assert result.error.type == infrarely.ErrorType.DELEGATION_FAILED
         agent.shutdown()
 
     def test_delegate_to_shutdown_agent(self):
@@ -88,7 +88,7 @@ class TestDelegation:
 
         result = a.delegate(b, "task")
         assert not result.success
-        assert result.error.type == aos.ErrorType.DELEGATION_FAILED
+        assert result.error.type == infrarely.ErrorType.DELEGATION_FAILED
         a.shutdown()
 
 

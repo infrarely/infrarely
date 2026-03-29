@@ -12,14 +12,14 @@ Outputs:
 """
 
 from __future__ import annotations
+
 import json
 import os
-import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
-import infrarely.core.app_config as config
+from typing import Any, Dict, List
+
 from infrarely.observability import logger
 from infrarely.runtime.paths import FAILURE_REPORTS_DIR
 

@@ -18,12 +18,14 @@ Design:
 """
 
 from __future__ import annotations
+
 import time
 import uuid
-from collections import deque, defaultdict
+from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
+
 from infrarely.observability import logger
 
 

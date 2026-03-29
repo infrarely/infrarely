@@ -16,9 +16,8 @@ from __future__ import annotations
 import heapq
 import time
 import uuid
-from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 
 @dataclass

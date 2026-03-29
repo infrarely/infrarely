@@ -23,14 +23,14 @@ Design contract
 """
 
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from infrarely.agent.capability import Capability
 from infrarely.agent.reasoning_engine import ReasoningResult
 from infrarely.capabilities.registry import CapabilityRegistry
-from infrarely.agent.capability import Capability
 from infrarely.observability import logger
-
 
 # ── Direct intent → capability mapping (CP1 fix) ─────────────────────────────
 _INTENT_TO_CAPABILITY = {

@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import asyncio
 import concurrent.futures
-from typing import Any, Callable, List, Optional, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 if TYPE_CHECKING:
     from infrarely.core.agent import Agent
@@ -147,7 +147,7 @@ async def async_gather(
     results = await asyncio.gather(*coros, return_exceptions=return_exceptions)
 
     # Wrap exceptions in Result objects if needed
-    from infrarely.core.result import _fail, ErrorType
+    from infrarely.core.result import ErrorType, _fail
 
     processed = []
     for r in results:

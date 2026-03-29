@@ -3,8 +3,10 @@ agent/error_recovery.py  — Gap 5: Error Recovery Engine
 Maps structured errors to deterministic recovery actions.
 """
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional
+from typing import Callable, List, Optional
+
 from infrarely.agent.state import ExecutionContract, ToolResult
 from infrarely.observability import logger
 

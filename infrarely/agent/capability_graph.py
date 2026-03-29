@@ -22,14 +22,14 @@ Design contract
 """
 
 from __future__ import annotations
+
 from collections import deque
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Set
 
-from infrarely.agent.capability import CapabilityStep, FailurePolicy
-from infrarely.agent.state import ResponseType
-from infrarely.observability import logger
 import infrarely.core.app_config as config
+from infrarely.agent.capability import CapabilityStep, FailurePolicy
+from infrarely.observability import logger
 
 
 # ─── Graph node ───────────────────────────────────────────────────────────────
@@ -181,7 +181,6 @@ class CapabilityGraphBuilder:
         Infers dependencies from param references.
         Computes topological execution order.
         """
-        from infrarely.agent.capability import Capability
 
         nodes: Dict[str, GraphNode] = {}
         step_names = {s.name for s in capability.steps}

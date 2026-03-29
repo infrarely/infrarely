@@ -204,7 +204,7 @@ class CapabilityMarketplace:
                 continue
             results.append(listing)
 
-        results.sort(key=lambda l: l.composite_score, reverse=True)
+        results.sort(key=lambda listing: listing.composite_score, reverse=True)
         return results
 
     # ── best provider ───────────────────────────────────────────────────
@@ -280,13 +280,15 @@ class CapabilityMarketplace:
 
     def snapshot(self) -> Dict[str, Any]:
         active = [
-            l for l in self._listings.values() if l.status == ListingStatus.ACTIVE
+            listing
+            for listing in self._listings.values()
+            if listing.status == ListingStatus.ACTIVE
         ]
-        caps = {l.capability for l in active}
+        caps = {listing.capability for listing in active}
         return {
             "total_listings": len(self._listings),
             "active_listings": len(active),
             "unique_capabilities": len(caps),
             "capabilities": sorted(caps),
-            "agents_publishing": len({l.provider_agent for l in active}),
+            "agents_publishing": len({listing.provider_agent for listing in active}),
         }

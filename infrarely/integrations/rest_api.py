@@ -5,9 +5,9 @@ infrarely/integrations/rest_api.py — Generic REST API Integration
 from __future__ import annotations
 
 import json
-import urllib.request
 import urllib.error
-from typing import Any, Dict, List, Optional
+import urllib.request
+from typing import Any, Dict, Optional
 
 from infrarely.integrations import Integration
 

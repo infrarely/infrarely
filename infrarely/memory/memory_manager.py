@@ -37,10 +37,11 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from config import (
     LONG_TERM_DB_PATH,
-    WORKING_MEMORY_WINDOW,
-    SUMMARY_TRIGGER_COUNT,
     MAX_SUMMARY_TOKENS,
+    SUMMARY_TRIGGER_COUNT,
+    WORKING_MEMORY_WINDOW,
 )
+
 from infrarely.observability.logger import get_logger
 
 log = get_logger("memory")

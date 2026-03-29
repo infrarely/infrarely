@@ -23,14 +23,14 @@ ExecutionPlan invariants
 """
 
 from __future__ import annotations
+
 from typing import Tuple
 
 from infrarely.agent.state import ExecutionPlan, ResponseType, TaskState, ToolResult
-from infrarely.router.intent_classifier import IntentClassifier, IntentMatch
-from infrarely.tools.registry import ToolRegistry
 from infrarely.observability import logger
 from infrarely.observability.metrics import collector
-import infrarely.core.app_config as config
+from infrarely.router.intent_classifier import IntentClassifier, IntentMatch
+from infrarely.tools.registry import ToolRegistry
 
 
 class ToolRouter:

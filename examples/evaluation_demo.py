@@ -29,7 +29,7 @@ agent.knowledge.add_data("euler", "Euler's number e is approximately 2.71828")
 
 
 # ── Create evaluation suite ───────────────────────────────────────────────────
-suite = aos.eval.suite("math-agent-evals")
+suite = infrarely.eval.suite("math-agent-evals")
 
 # Test math operations (should bypass LLM)
 suite.add(
@@ -99,7 +99,7 @@ if results.regression_report:
 
 # ── Quick eval shortcut ──────────────────────────────────────────────────────
 print(f"\n─── Quick Eval ───")
-quick = aos.eval.quick_eval(
+quick = infrarely.eval.quick_eval(
     agent,
     input="What is 5 * 5?",
     expected_output=25,

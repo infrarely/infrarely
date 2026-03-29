@@ -18,22 +18,22 @@ PlanCache
 """
 
 from __future__ import annotations
+
 import hashlib
 import json
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+import infrarely.core.app_config as config
 from infrarely.agent.capability import (
     Capability,
     CapabilityPlan,
     CapabilityStep,
-    FailurePolicy,
 )
-from infrarely.agent.state import TaskState, ResponseType
-from infrarely.tools.registry import ToolRegistry
+from infrarely.agent.state import ResponseType, TaskState
 from infrarely.observability import logger
-import infrarely.core.app_config as config
+from infrarely.tools.registry import ToolRegistry
 
 
 # ─── Compilation errors ───────────────────────────────────────────────────────
@@ -216,7 +216,6 @@ class CapabilityCompiler:
         Build a directed graph: step_name → set of step_names it depends on.
         Dependencies come from {step_name.field} references in base_params.
         """
-        import re
 
         graph: Dict[str, Set[str]] = {}
         step_names = {s.name for s in steps}

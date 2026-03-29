@@ -5,10 +5,11 @@ Provides a snapshot at any time and resets per session.
 """
 
 from __future__ import annotations
-from collections import defaultdict
-from dataclasses import dataclass, field
-from typing import Dict, List
+
 import time
+from collections import defaultdict
+from dataclasses import dataclass
+from typing import Dict, List
 
 
 @dataclass

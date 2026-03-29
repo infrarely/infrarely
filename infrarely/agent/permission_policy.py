@@ -3,8 +3,10 @@ agent/permission_policy.py  — Gap 3: Tool Permission Policy
 Controls which tools a given agent profile may call.
 """
 from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set
+from typing import Dict, Set
+
 import infrarely.core.app_config as config
 from infrarely.observability import logger
 

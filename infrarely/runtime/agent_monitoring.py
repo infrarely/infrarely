@@ -13,10 +13,11 @@ Extends existing observability layer with multi-agent metrics:
 """
 
 from __future__ import annotations
+
 import time
-from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
+
 from infrarely.observability import logger
 
 

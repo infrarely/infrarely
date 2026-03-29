@@ -8,12 +8,13 @@ It handles greetings, help, and unknown queries — 0 tokens, offline-safe.
 """
 
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from infrarely.agent.state import ResponseType
-from infrarely.tools.base_tool import BaseTool
 from infrarely.observability import logger
+from infrarely.tools.base_tool import BaseTool
 
 
 @dataclass

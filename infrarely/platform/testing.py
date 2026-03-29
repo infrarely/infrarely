@@ -34,7 +34,7 @@ import functools
 import time
 import unittest
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 from unittest.mock import MagicMock, patch
 
 _UNSET = object()  # sentinel for unset default values
@@ -69,7 +69,6 @@ class AgentTestCase(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures. Override in subclass."""
-        import infrarely
 
         self._test_agents: list = []
         # Reset singletons for clean test state

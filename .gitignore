@@ -68,8 +68,6 @@ logs/
 .infrarely/
 .infrarely_versions/
 .infrarely_packages/
-.aos_versions/
-.aos_packages/
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Trash — old project files (pre-migration)

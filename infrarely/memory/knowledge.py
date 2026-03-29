@@ -17,7 +17,6 @@ Philosophy: LLM is the LAST resort, not the first.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import os
@@ -25,11 +24,10 @@ import re
 import threading
 import time
 import uuid
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DATA STRUCTURES

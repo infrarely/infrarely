@@ -21,12 +21,12 @@ respond : Structures the final answer in a student-friendly format.
           Never outputs raw tool JSON.
 """
 
-import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import Dict
 
+from config import CONFIDENCE_THRESHOLD, FABRICATION_SIGNALS
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
-from config import CONFIDENCE_THRESHOLD, FABRICATION_SIGNALS, UNCERTAINTY_PHRASES
+
 from infrarely.agent.state import AgentState, ReasoningStep
 from infrarely.observability.logger import get_logger
 

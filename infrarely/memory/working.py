@@ -6,6 +6,7 @@ compressed into long-term memory to keep context small.
 """
 
 from __future__ import annotations
+
 from collections import deque
 from typing import List, Optional
 

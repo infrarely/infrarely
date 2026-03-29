@@ -10,9 +10,9 @@ Usage:
                        user_id="dr-smith")
     # Every action is automatically logged
 
-    entries = aos.compliance_log.trail(agent="claims-agent")
-    aos.compliance_log.export("audit-2024.json")
-    aos.compliance_log.export("audit-2024.csv", format="csv")
+    entries = infrarely.compliance_log.trail(agent="claims-agent")
+    infrarely.compliance_log.export("audit-2024.json")
+    infrarely.compliance_log.export("audit-2024.csv", format="csv")
 
 The compliance log is SEPARATE from security.AuditLog:
   - security.AuditLog: Tracks security screening (PII, injection, etc.)
@@ -23,16 +23,14 @@ from __future__ import annotations
 
 import csv
 import hashlib
-import io
 import json
 import os
 import sqlite3
 import threading
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ACTION TYPES
@@ -149,8 +147,7 @@ class ComplianceLog:
         )
         self._conn = sqlite3.connect(db_path, check_same_thread=False)
         self._conn.execute("PRAGMA journal_mode=WAL")
-        self._conn.executescript(
-            """
+        self._conn.executescript("""
             CREATE TABLE IF NOT EXISTS compliance_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 action TEXT NOT NULL,
@@ -170,8 +167,7 @@ class ComplianceLog:
             CREATE INDEX IF NOT EXISTS idx_compliance_timestamp ON compliance_log(timestamp);
             CREATE INDEX IF NOT EXISTS idx_compliance_user ON compliance_log(user_id);
             CREATE INDEX IF NOT EXISTS idx_compliance_session ON compliance_log(session_id);
-        """
-        )
+        """)
         self._conn.commit()
 
     def _compute_hash(

@@ -22,14 +22,13 @@ import json
 import os
 import sys
 import time
-import readline  # enables arrow-key history in input()
 
 # Ensure the package is importable
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 import infrarely
-from infrarely.observability.observability import get_logger, get_metrics
 from infrarely.core.config import get_config
+from infrarely.observability.observability import get_logger
 
 # ─── Colors ───────────────────────────────────────────────────────────────────
 
@@ -192,7 +191,7 @@ def cmd_info(args):
     print(f"  Max Retries:    {cfg.get('max_retries', 'N/A')}")
     print(f"  Max Agents:     {cfg.get('max_agents', 'N/A')}")
 
-    from infrarely.core.decorators import ToolRegistry, CapabilityRegistry
+    from infrarely.core.decorators import CapabilityRegistry, ToolRegistry
 
     tools = ToolRegistry().all_tools()
     caps = CapabilityRegistry().all_capabilities()
@@ -372,7 +371,7 @@ def cmd_repl(args):
                         agent.knowledge.add_data("repl_input", text)
                         print(f"  {GREEN}Knowledge added.{RESET}")
                     else:
-                        print(f"  Usage: /knowledge <text to add>")
+                        print("  Usage: /knowledge <text to add>")
                 else:
                     print(f"  {RED}Unknown command: {cmd}. Type /help.{RESET}")
                 continue
@@ -481,7 +480,7 @@ OPENAI_API_KEY=sk-your-key-here
 
     # Create eval.yaml
     eval_yaml = f"""# Evaluation suite for {project_name}
-# Run with: aos eval {project_name}/eval.yaml
+# Run with: infrarely eval {project_name}/eval.yaml
 name: {project_name}-evals
 cases:
   - input: "Greet Alice"
@@ -507,8 +506,8 @@ cases:
     print(f"    {project_name}/eval.yaml        — Evaluation suite")
     print(f"\n  {DIM}Next steps:{RESET}")
     print(f"    cd {project_name}")
-    print(f"    cp .env.example .env")
-    print(f"    python main.py")
+    print("    cp .env.example .env")
+    print("    python main.py")
     print()
 
 
@@ -571,7 +570,7 @@ def cmd_inspect(args):
     agent = infrarely.agent(agent_name)
 
     print(f"\n  {BOLD}Agent Inspection: {agent_name}{RESET}")
-    print(f"  ─────────────────────────────────────")
+    print("  ─────────────────────────────────────")
     print(f"  State:          {agent.state}")
     print(f"  Description:    {agent.description}")
 
@@ -623,13 +622,13 @@ def cmd_inspect(args):
 
 def cmd_security(args):
     """Show security status and audit log."""
-    from infrarely.security.security import get_security_guard, get_audit_log
+    from infrarely.security.security import get_audit_log, get_security_guard
 
     guard = get_security_guard()
     audit = get_audit_log()
 
     print(f"\n  {BOLD}Security Status{RESET}")
-    print(f"  ─────────────────────────────────────")
+    print("  ─────────────────────────────────────")
 
     policy = guard.policy
     print(
@@ -837,7 +836,8 @@ def cmd_marketplace(args):
         print(f"  License:    {meta.license}")
         print(f"  Downloads:  {meta.downloads}")
         print(f"  Tags:       {', '.join(meta.tags) if meta.tags else 'none'}")
-        print(f"  Installed:  {'\u2713 yes' if installed else '\u2717 no'}")
+        installed_text = "yes" if installed else "no"
+        print(f"  Installed:  {installed_text}")
         print()
 
     elif action == "installed":
@@ -876,7 +876,7 @@ def cmd_marketplace(args):
 
 def cmd_benchmark(args):
     """Run performance benchmarks."""
-    from infrarely.platform.benchmark import run_benchmark, list_baselines
+    from infrarely.platform.benchmark import list_baselines, run_benchmark
 
     suite_name = getattr(args, "tasks", "standard-suite-v1")
     vs = getattr(args, "vs", None)
@@ -943,7 +943,7 @@ def cmd_runs(args):
 def cmd_trace(args):
     """Render execution trace for a run."""
     from infrarely.core.run_store import RunStore
-    from infrarely.observability.trace_renderer import render_terminal, render_html
+    from infrarely.observability.trace_renderer import render_html, render_terminal
 
     store = RunStore()
     run = store.load(args.run_id)
@@ -985,7 +985,7 @@ Examples:
     infrarely trace <run_id> [--html]         Render trace report
   infrarely info                            SDK info
   infrarely test                            Run test suite
-  aos                                 Interactive REPL
+    infrarely                           Interactive REPL
 """,
     )
 

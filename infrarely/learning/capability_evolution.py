@@ -20,7 +20,6 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
-
 # ── Data types ────────────────────────────────────────────────────────────────
 
 
@@ -208,7 +207,7 @@ class CapabilityEvolutionEngine:
                         f"'{profile.name}' uses ~{profile.token_cost} tokens/exec — "
                         f"tune parameters to reduce cost"
                     ),
-                    expected_improvement=f"Reduce token usage by ~30%",
+                    expected_improvement="Reduce token usage by ~30%",
                     details={"current_token_cost": profile.token_cost},
                     confidence=0.5,
                 )

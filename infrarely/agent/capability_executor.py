@@ -35,25 +35,25 @@ Integration with new infrastructure
 """
 
 from __future__ import annotations
-import time
-from typing import Any, Dict, Optional, Tuple
 
+import time
+from typing import Any, Dict, Optional
+
+import infrarely.core.app_config as config
 from infrarely.agent.capability import (
     CapabilityPlan,
     CapabilityResult,
-    CapabilityStep,
     FailurePolicy,
     StepStatus,
     StepTrace,
 )
-from infrarely.agent.capability_graph import CapabilityGraphBuilder, CapabilityGraph, GraphNode
+from infrarely.agent.capability_graph import CapabilityGraphBuilder, GraphNode
+from infrarely.agent.error_recovery import ErrorRecoveryEngine
 from infrarely.agent.state import ExecutionContract, TaskState, ToolResult, ToolStatus
 from infrarely.agent.tool_sandbox import ToolSandbox
 from infrarely.agent.verification import VerificationEngine
-from infrarely.agent.error_recovery import ErrorRecoveryEngine
-from infrarely.tools.registry import ToolRegistry
 from infrarely.observability import logger
-import infrarely.core.app_config as config
+from infrarely.tools.registry import ToolRegistry
 
 
 class CapabilityExecutor:

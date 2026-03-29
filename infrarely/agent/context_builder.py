@@ -14,11 +14,11 @@ Design principles
 """
 
 from __future__ import annotations
-from typing import List, Dict, Optional
+
+from typing import Dict, List, Optional
 
 import infrarely.core.app_config as config
-from infrarely.agent.state import ToolResult, TaskState
-
+from infrarely.agent.state import TaskState, ToolResult
 
 # ── token-approximate budgets (4 chars ≈ 1 token) ────────────────────────────
 _MAX_CONTEXT_CHARS  = config.MAX_CONTEXT_TOKENS_FOR_LLM * 4   # e.g. 3200 chars

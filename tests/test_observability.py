@@ -54,8 +54,8 @@ class TestMetrics:
     def test_metrics_singleton(self):
         import infrarely
 
-        m1 = aos.metrics
-        m2 = aos.metrics
+        m1 = infrarely.metrics
+        m2 = infrarely.metrics
         assert m1 is m2
 
     def test_bypass_rate(self):
@@ -88,7 +88,7 @@ class TestMetrics:
 
         data = infrarely.metrics.export(format="prometheus")
         assert isinstance(data, str)
-        assert "aos_total_tasks" in data
+        assert "infrarely_total_tasks" in data
 
 
 class TestHealth:

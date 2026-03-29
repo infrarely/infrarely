@@ -7,8 +7,10 @@ It evaluates the current context against a rule table and emits
 a list of precondition checks before capabilities execute.
 """
 from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
+
 from infrarely.observability import logger
 
 

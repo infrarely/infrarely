@@ -27,7 +27,6 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # SYNC SOURCE — Definition of a syncable knowledge source
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -246,8 +245,8 @@ class SyncScheduler:
 
         # API
         if source.source_type == "api" and source.url:
-            import urllib.request
             import json
+            import urllib.request
 
             req = urllib.request.Request(
                 source.url, headers=source.headers, method=source.method

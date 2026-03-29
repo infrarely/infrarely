@@ -4,12 +4,11 @@ infrarely/integrations/webhook.py — Webhook Integration
 
 from __future__ import annotations
 
-import json
-import urllib.request
-import urllib.error
 import hashlib
 import hmac
-import time
+import json
+import urllib.error
+import urllib.request
 from typing import Any, Callable, Dict, List, Optional
 
 from infrarely.integrations import Integration

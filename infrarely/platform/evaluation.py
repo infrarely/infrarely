@@ -8,7 +8,7 @@ provides structured evaluation suites with regression tracking.
 
 Usage::
 
-    suite = aos.eval.suite("study-assistant-evals")
+    suite = infrarely.eval.suite("study-assistant-evals")
 
     suite.add(
         input="What is 144 / 12?",
@@ -30,13 +30,12 @@ Usage::
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import time
-import hashlib
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 if TYPE_CHECKING:
     from infrarely.core.agent import Agent
@@ -170,7 +169,7 @@ class EvalSuiteResults:
                 if r.error:
                     lines.append(f"    → Error: {r.error}")
         if self.regression_report:
-            lines.append(f"\n── Regression Report ──")
+            lines.append("\n── Regression Report ──")
             lines.append(self.regression_report)
         return "\n".join(lines)
 
@@ -549,7 +548,7 @@ class EvalSuite:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# EVAL NAMESPACE — Top-level aos.eval interface
+# EVAL NAMESPACE — Top-level infrarely.eval interface
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
@@ -559,7 +558,7 @@ class EvalNamespace:
 
     Usage::
 
-        suite = aos.eval.suite("my-evals")
+        suite = infrarely.eval.suite("my-evals")
         results = suite.run(agent)
     """
 

@@ -5,8 +5,8 @@ infrarely/integrations/notion.py — Notion Integration
 from __future__ import annotations
 
 import json
-import urllib.request
 import urllib.error
+import urllib.request
 from typing import Any, Dict, List, Optional
 
 from infrarely.integrations import Integration

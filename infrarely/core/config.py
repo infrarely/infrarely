@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import os
 import threading
-from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
 from infrarely.runtime.paths import (

@@ -3,9 +3,9 @@ agent/tool_sandbox.py  — Gap 7: Tool Sandbox
 Wraps tool.run() with timeout enforcement and output size limits.
 """
 from __future__ import annotations
+
 import threading
-import time
-from typing import Optional
+
 import infrarely.core.app_config as config
 from infrarely.agent.state import ExecutionContract, TaskState, ToolResult
 from infrarely.observability import logger

@@ -6,10 +6,11 @@ LLM compression is opt-in and uses the configured backend (Ollama/Groq/Gemini).
 """
 
 from __future__ import annotations
+
 import json
 import os
-from typing import List, Optional
 from datetime import datetime
+from typing import List
 
 import infrarely.core.app_config as config
 from infrarely.agent.state import Message

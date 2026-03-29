@@ -27,85 +27,80 @@ LLM call invariants (enforced, not documented wishes)
 """
 
 from __future__ import annotations
+
 import time
-from typing import Optional
 
 import infrarely.core.app_config as config
+from infrarely.agent.capability_compiler import (
+    CapabilityCompiler,
+    CompilationError,
+    PlanCache,
+)
+from infrarely.agent.capability_executor import CapabilityExecutor
+from infrarely.agent.capability_resolver import CapabilityResolver
+from infrarely.agent.context_builder import build as build_context
+from infrarely.agent.context_builder import estimate_tokens
+from infrarely.agent.error_recovery import ErrorRecoveryEngine
+from infrarely.agent.execution_trace import ExecutionTrace
+from infrarely.agent.knowledge_layer import (
+    ConfidenceLevel,
+    build_grounded_prompt,
+    create_knowledge_layer_from_data,
+)
+from infrarely.agent.llm_client import llm_call
+from infrarely.agent.planning_engine import DeterministicPlanningEngine
+from infrarely.agent.reasoning_engine import DeterministicReasoningEngine
+from infrarely.agent.response_formatter import format_result
 from infrarely.agent.state import (
     AgentResponse,
     ExecutionPlan,
     Message,
     ResponseType,
-    TaskState,
     ToolResult,
 )
-from infrarely.agent.context_builder import build as build_context, estimate_tokens
-from infrarely.agent.response_formatter import format_result
-from infrarely.agent.llm_client import llm_call
-from infrarely.agent.verification import VerificationEngine
-from infrarely.agent.reasoning_engine import DeterministicReasoningEngine
-from infrarely.agent.capability_resolver import CapabilityResolver
-from infrarely.agent.capability_compiler import (
-    CapabilityCompiler,
-    PlanCache,
-    CompilationError,
-)
-from infrarely.agent.capability_executor import CapabilityExecutor
-from infrarely.agent.error_recovery import ErrorRecoveryEngine
-from infrarely.agent.execution_trace import ExecutionTrace
-from infrarely.memory.advance_memory import AdvancedMemoryManager
-from infrarely.memory.working import WorkingMemory
-from infrarely.memory.structured import StructuredMemory
-from infrarely.memory.long_term import LongTermMemory
-from infrarely.router.tool_router import ToolRouter
-from infrarely.tools.registry import ToolRegistry
-from infrarely.observability import logger
-from infrarely.observability.metrics import collector
-from infrarely.observability.token_budget import TokenBudget
-
-# ── Layer 5: Optimization Intelligence ────────────────────────────────────────
-from infrarely.optimization.routing_optimizer import RoutingOptimizer
-from infrarely.optimization.parameter_inference import ParameterInferenceEngine
-from infrarely.optimization.capability_optimizer import CapabilityOptimizer
-from infrarely.optimization.failure_analyzer import FailureAnalyzer
-from infrarely.optimization.capability_discovery import CapabilityDiscoveryEngine
-from infrarely.optimization.token_optimizer import TokenOptimizer
-from infrarely.optimization.skill_memory import SkillMemory
-from infrarely.optimization.quality_scorer import ExecutionQualityScorer
-from infrarely.optimization.safety_controller import SafetyController
-from infrarely.optimization.trace_intelligence import TraceIntelligenceEngine
-
-# ── Layer 6: Multi-Agent Runtime ──────────────────────────────────────────────
-from infrarely.runtime.agent_registry import AgentRegistry, AgentStatus
-from infrarely.runtime.agent_scheduler import AgentScheduler, SchedulingStrategy
-from infrarely.runtime.message_bus import MessageBus
-from infrarely.runtime.shared_memory import SharedMemory
-from infrarely.runtime.identity_permissions import (
-    IdentityManager,
-    AgentRole,
-    Permission,
-)
-from infrarely.runtime.resource_isolation import ResourceIsolation, ResourceQuota
-from infrarely.runtime.capability_market import CapabilityMarketplace
-from infrarely.runtime.negotiation_protocol import NegotiationProtocol
-from infrarely.runtime.lifecycle_manager import LifecycleManager
-from infrarely.runtime.agent_monitoring import AgentMonitoring
 
 # ── InfraRely Capabilities ─────────────────────────────────────────────────────────
 from infrarely.agent.state_machine import (
-    AgentStateMachine,
     AgentCognitiveState,
-    StateMachineManager,
     InvalidTransitionError,
+    StateMachineManager,
 )
-from infrarely.agent.planning_engine import DeterministicPlanningEngine
-from infrarely.agent.knowledge_layer import (
-    KnowledgeLayer,
-    ConfidenceLevel,
-    build_grounded_prompt,
-    create_knowledge_layer_from_data,
-)
+from infrarely.agent.verification import VerificationEngine
+from infrarely.memory.advance_memory import AdvancedMemoryManager
+from infrarely.memory.long_term import LongTermMemory
+from infrarely.memory.structured import StructuredMemory
+from infrarely.memory.working import WorkingMemory
+from infrarely.observability import logger
+from infrarely.observability.metrics import collector
+from infrarely.observability.token_budget import TokenBudget
+from infrarely.optimization.capability_discovery import CapabilityDiscoveryEngine
+from infrarely.optimization.capability_optimizer import CapabilityOptimizer
+from infrarely.optimization.failure_analyzer import FailureAnalyzer
+from infrarely.optimization.parameter_inference import ParameterInferenceEngine
+from infrarely.optimization.quality_scorer import ExecutionQualityScorer
 
+# ── Layer 5: Optimization Intelligence ────────────────────────────────────────
+from infrarely.optimization.routing_optimizer import RoutingOptimizer
+from infrarely.optimization.safety_controller import SafetyController
+from infrarely.optimization.skill_memory import SkillMemory
+from infrarely.optimization.token_optimizer import TokenOptimizer
+from infrarely.optimization.trace_intelligence import TraceIntelligenceEngine
+from infrarely.router.tool_router import ToolRouter
+from infrarely.runtime.agent_monitoring import AgentMonitoring
+
+# ── Layer 6: Multi-Agent Runtime ──────────────────────────────────────────────
+from infrarely.runtime.agent_registry import AgentRegistry
+from infrarely.runtime.agent_scheduler import AgentScheduler, SchedulingStrategy
+from infrarely.runtime.capability_market import CapabilityMarketplace
+from infrarely.runtime.identity_permissions import (
+    IdentityManager,
+)
+from infrarely.runtime.lifecycle_manager import LifecycleManager
+from infrarely.runtime.message_bus import MessageBus
+from infrarely.runtime.negotiation_protocol import NegotiationProtocol
+from infrarely.runtime.resource_isolation import ResourceIsolation
+from infrarely.runtime.shared_memory import SharedMemory
+from infrarely.tools.registry import ToolRegistry
 
 _SYSTEM_PROMPT = (
     "You are a concise, accurate student life assistant. "
@@ -918,7 +913,7 @@ class AgentCore:
         }
 
     # ── InfraRely snapshot (for CLI) ────────────────────────────────────────────────
-    def get_aos_snapshot(self) -> dict:
+    def get_infrarely_snapshot(self) -> dict:
         """Return a combined snapshot of all InfraRely capabilities."""
         sm_state = self._agent_sm.state
         return {

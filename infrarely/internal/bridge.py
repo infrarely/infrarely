@@ -13,24 +13,13 @@ This bridge resolves goals using:
 
 from __future__ import annotations
 
-import hashlib
 import re
 import time
-import traceback
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional
 
 from infrarely.core.config import get_config
-from infrarely.core.result import Result, Error, ErrorType, _ok, _fail
-from infrarely.memory.knowledge import (
-    KnowledgeManager,
-    KnowledgeResult,
-    get_knowledge_manager,
-)
 from infrarely.core.decorators import (
-    ToolRegistry,
     get_tool_registry,
-    CapabilityRegistry,
-    get_capability_registry,
 )
 from infrarely.core.guardrails import (
     GuardrailViolation,
@@ -40,18 +29,23 @@ from infrarely.core.guardrails import (
     validate_tool_call,
     verify_output,
 )
-from infrarely.runtime.workflow import Workflow, StepResult
+from infrarely.core.result import ErrorType, Result, _fail, _ok
+from infrarely.memory.knowledge import (
+    KnowledgeManager,
+    KnowledgeResult,
+)
 from infrarely.observability.observability import (
     ExecutionTrace,
-    TraceStep,
-    TraceLLMCall,
     TraceKnowledgeQuery,
+    TraceLLMCall,
     TraceStateTransition,
-    TraceToolCall,
+    TraceStep,
     TraceStore,
-    get_metrics,
+    TraceToolCall,
     get_logger,
+    get_metrics,
 )
+from infrarely.runtime.workflow import Workflow
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INTENT CLASSIFIER — deterministic first, LLM never for routing
@@ -606,8 +600,8 @@ def _guardrail_error_type(layer: str) -> ErrorType:
 
 
 def _call_openai(api_key, model, messages, max_tokens, temperature):
-    import urllib.request
     import json as _json
+    import urllib.request
 
     start = time.monotonic()
     data = _json.dumps(
@@ -635,8 +629,8 @@ def _call_openai(api_key, model, messages, max_tokens, temperature):
 
 
 def _call_anthropic(api_key, model, system, prompt, max_tokens, temperature):
-    import urllib.request
     import json as _json
+    import urllib.request
 
     start = time.monotonic()
     data = _json.dumps(
@@ -668,8 +662,8 @@ def _call_anthropic(api_key, model, system, prompt, max_tokens, temperature):
 
 
 def _call_groq(api_key, model, messages, max_tokens, temperature):
-    import urllib.request
     import json as _json
+    import urllib.request
 
     start = time.monotonic()
     data = _json.dumps(
@@ -697,8 +691,8 @@ def _call_groq(api_key, model, messages, max_tokens, temperature):
 
 
 def _call_gemini(api_key, model, prompt, max_tokens, temperature):
-    import urllib.request
     import json as _json
+    import urllib.request
 
     start = time.monotonic()
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
@@ -723,8 +717,8 @@ def _call_gemini(api_key, model, prompt, max_tokens, temperature):
 
 
 def _call_ollama(model, messages, max_tokens, temperature, base_url=None):
-    import urllib.request
     import json as _json
+    import urllib.request
 
     start = time.monotonic()
     url = f"{base_url or 'http://localhost:11434'}/api/chat"

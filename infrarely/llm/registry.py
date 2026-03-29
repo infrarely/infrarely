@@ -6,7 +6,6 @@ from infrarely.llm.gemini_provider import GeminiProvider
 from infrarely.llm.groq_provider import GroqProvider
 from infrarely.llm.openai_provider import OpenAIProvider
 
-
 _PROVIDERS = {
     "openai": OpenAIProvider,
     "groq": GroqProvider,

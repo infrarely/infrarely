@@ -46,9 +46,10 @@ Auditing
 """
 
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional
 
 from infrarely.agent.state import ExecutionContract, TaskState, ToolResult
 

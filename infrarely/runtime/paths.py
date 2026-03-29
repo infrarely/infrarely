@@ -45,12 +45,12 @@ def ensure_runtime_layout() -> None:
 
 def _legacy_mappings(cwd: Path) -> Iterable[Tuple[Path, Path]]:
     return (
-        (cwd / "aos_memory.db", MEMORY_DB),
-        (cwd / "aos_traces.db", TRACES_DB),
-        (cwd / "aos_state.db", STATE_DB),
-        (cwd / "logs" / "aos.log", LOG_FILE),
-        (cwd / ".aos_versions", VERSIONS_DIR),
-        (cwd / ".aos_packages", PACKAGES_DIR),
+        (cwd / "infrarely_memory.db", MEMORY_DB),
+        (cwd / "infrarely_traces.db", TRACES_DB),
+        (cwd / "infrarely_state.db", STATE_DB),
+        (cwd / "logs" / "infrarely.log", LOG_FILE),
+        (cwd / ".infrarely_versions", VERSIONS_DIR),
+        (cwd / ".infrarely_packages", PACKAGES_DIR),
     )
 
 

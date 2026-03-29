@@ -75,13 +75,16 @@ from __future__ import annotations
 
 try:
     from importlib.metadata import (
-        version as _pkg_version,
         PackageNotFoundError as _PkgNotFound,
+    )
+    from importlib.metadata import (
+        version as _pkg_version,
     )
 
     __version__ = _pkg_version("infrarely")
 except Exception:
     __version__ = "0.0.0"
+
 __all__ = [
     # Core
     "agent",
@@ -266,52 +269,76 @@ __all__ = [
 ]
 
 # ─── Result & Error types ────────────────────────────────────────────────────
-from infrarely.core.result import Result, Error, ErrorType
-from infrarely.core.guardrails import GuardrailViolation, REGISTRY as guardrail_registry
-from infrarely.core.replay import replay, list_runs as list_agent_runs
-from infrarely.observability.trace_renderer import render_terminal, render_html
+# ─── Integrations ─────────────────────────────────────────────────────────────
+from infrarely import integrations
+from infrarely.agent.state import ResponseType
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 from infrarely.core.config import configure, get_config
 
+# ─── Context Window ───────────────────────────────────────────────────────────
+from infrarely.core.context import ContextStrategy, ContextWindowManager, OverflowAction
+
 # ─── Decorators ───────────────────────────────────────────────────────────────
-from infrarely.core.decorators import tool, capability
-from infrarely.router.intent_classifier import register_route
-from infrarely.agent.state import ResponseType
+from infrarely.core.decorators import capability, tool
 
-# ─── Memory ───────────────────────────────────────────────────────────────────
-from infrarely.memory.memory import AgentMemory
+# ─── Events & Webhooks ───────────────────────────────────────────────────
+from infrarely.core.events import (
+    CronParser,
+    Event,
+    EventBus,
+    ScheduleEntry,
+    ScheduleManager,
+    WebhookRegistry,
+    WebhookRoute,
+    get_event_bus,
+    get_schedule_manager,
+    get_webhook_registry,
+)
+from infrarely.core.guardrails import REGISTRY as guardrail_registry
+from infrarely.core.guardrails import GuardrailViolation
+from infrarely.core.replay import list_runs as list_agent_runs
+from infrarely.core.replay import replay
+from infrarely.core.result import Error, ErrorType, Result
 
-# ─── Knowledge (module-level singleton) ───────────────────────────────────────
-from infrarely.memory import knowledge as _knowledge_module
-from infrarely.memory.knowledge import get_knowledge_manager as _get_km
-
-# ─── Workflow ─────────────────────────────────────────────────────────────────
-from infrarely.runtime.workflow import step, Workflow, parallel
-
-# ─── Observability ────────────────────────────────────────────────────────────
-from infrarely.observability.observability import (
-    ExecutionTrace,
-    TraceStore,
-    HealthReport,
-    MetricsCollector,
-    get_metrics as _get_metrics,
-    get_logger as _get_logger,
+# ─── Streaming ────────────────────────────────────────────────────────────────
+from infrarely.core.streaming import (
+    AsyncStreamIterator,
+    StreamChunk,
+    StreamIterator,
+    StreamResult,
 )
 
 # ─── State ────────────────────────────────────────────────────────────────────
 from infrarely.internal.state_bridge import AgentState
 
-# ─── Security ─────────────────────────────────────────────────────────────────
-from infrarely.security.security import (
-    SecurityPolicy,
-    SecurityGuard,
-    DetectionResult,
-    ThreatLevel,
-    InjectionType,
-    get_security_guard,
-    get_audit_log,
+# ─── Knowledge (module-level singleton) ───────────────────────────────────────
+from infrarely.memory import knowledge as _knowledge_module
+from infrarely.memory.knowledge import get_knowledge_manager as _get_km
+
+# ─── Memory ───────────────────────────────────────────────────────────────────
+from infrarely.memory.memory import AgentMemory
+
+# ─── Observability ────────────────────────────────────────────────────────────
+from infrarely.observability.observability import (
+    ExecutionTrace,
+    HealthReport,
+    MetricsCollector,
+    TraceStore,
 )
+from infrarely.observability.observability import (
+    get_logger as _get_logger,
+)
+from infrarely.observability.observability import (
+    get_metrics as _get_metrics,
+)
+from infrarely.observability.trace_renderer import render_html, render_terminal
+
+# ─── Testing ──────────────────────────────────────────────────────────────────
+from infrarely.platform import testing
+
+# ─── Evaluation ───────────────────────────────────────────────────────────────
+from infrarely.platform.evaluation import EvalNamespace as _EvalNamespace
 
 # ─── HITL (Human-in-the-Loop) ────────────────────────────────────────────────
 from infrarely.platform.hitl import (
@@ -319,111 +346,94 @@ from infrarely.platform.hitl import (
     ApprovalRequest,
     ApprovalRule,
     ApprovalStatus,
-    get_approval_manager,
     HITLGate,
-)
-
-# ─── Evaluation ───────────────────────────────────────────────────────────────
-from infrarely.platform.evaluation import EvalNamespace as _EvalNamespace
-
-# ─── Versioning ───────────────────────────────────────────────────────────────
-from infrarely.platform.versioning import VersionManager as _VersionManager
-
-# ─── Streaming ────────────────────────────────────────────────────────────────
-from infrarely.core.streaming import (
-    StreamChunk,
-    StreamResult,
-    StreamIterator,
-    AsyncStreamIterator,
-)
-
-# ─── Context Window ───────────────────────────────────────────────────────────
-from infrarely.core.context import ContextStrategy, ContextWindowManager, OverflowAction
-
-# ─── Validation ───────────────────────────────────────────────────────────────
-from infrarely.platform.validation import (
-    SchemaValidator,
-    ValidationResult,
-    ValidationError,
-)
-
-# ─── Async Runner ─────────────────────────────────────────────────────────────
-from infrarely.runtime.async_runner import (
-    async_run,
-    async_gather,
-    async_delegate,
-    async_parallel,
-)
-
-# ─── Knowledge Sync ──────────────────────────────────────────────────────────
-from infrarely.platform.sync import SyncSource, SyncScheduler
-
-# ─── Testing ──────────────────────────────────────────────────────────────────
-from infrarely.platform import testing
-
-# ─── Integrations ─────────────────────────────────────────────────────────────
-from infrarely import integrations
-
-# ─── Token Tracking ───────────────────────────────────────────────────────
-from infrarely.platform.token_tracking import (
-    TokenTracker,
-    TokenUsage,
-    ModelPricing,
-    get_token_tracker,
-    get_pricing,
-    set_pricing,
-)
-
-# ─── Sandbox ──────────────────────────────────────────────────────────────
-from infrarely.runtime.sandbox import (
-    Sandbox,
-    SandboxGuard as SandboxGuardCls,
-    SandboxViolation,
-    ResourceMeter,
-)
-
-# ─── Scaling ──────────────────────────────────────────────────────────────
-from infrarely.runtime.scaling import (
-    StateBackend,
-    MemoryBackend,
-    SQLiteBackend,
-    create_backend,
-    CoordinationManager,
-)
-
-# ─── Compliance ───────────────────────────────────────────────────────────
-from infrarely.security.compliance import (
-    ComplianceLog,
-    ComplianceEntry,
-    ActionType,
-    get_compliance_log,
+    get_approval_manager,
 )
 
 # ─── Multi-Tenancy ────────────────────────────────────────────────────────
 from infrarely.platform.multitenancy import (
-    TenantManager,
+    AgentLimitExceeded,
+    RateLimitExceeded,
     TenantConfig,
     TenantContext,
     TenantError,
+    TenantManager,
     TenantNotFound,
     TokenBudgetExceeded,
-    RateLimitExceeded,
-    AgentLimitExceeded,
     get_tenant_manager,
 )
 
-# ─── Events & Webhooks ───────────────────────────────────────────────────
-from infrarely.core.events import (
-    EventBus,
-    Event,
-    WebhookRegistry,
-    WebhookRoute,
-    ScheduleManager,
-    ScheduleEntry,
-    CronParser,
-    get_event_bus,
-    get_webhook_registry,
-    get_schedule_manager,
+# ─── Knowledge Sync ──────────────────────────────────────────────────────────
+from infrarely.platform.sync import SyncScheduler, SyncSource
+
+# ─── Token Tracking ───────────────────────────────────────────────────────
+from infrarely.platform.token_tracking import (
+    ModelPricing,
+    TokenTracker,
+    TokenUsage,
+    get_pricing,
+    get_token_tracker,
+    set_pricing,
+)
+from infrarely.platform.tool_sandbox import (
+    ToolSandboxGuard as ToolSandboxGuardCls_,
+)
+
+# ─── Tool Execution Sandbox ──────────────────────────────────────────
+from infrarely.platform.tool_sandbox import (
+    ToolSandboxPolicy,
+    ToolSandboxResult,
+    ToolSandboxViolation,
+    get_tool_sandbox_guard,
+)
+
+# ─── Validation ───────────────────────────────────────────────────────────────
+from infrarely.platform.validation import (
+    SchemaValidator,
+    ValidationError,
+    ValidationResult,
+)
+
+# ─── Versioning ───────────────────────────────────────────────────────────────
+from infrarely.platform.versioning import VersionManager as _VersionManager
+from infrarely.router.intent_classifier import register_route
+
+# ─── Async Runner ─────────────────────────────────────────────────────────────
+from infrarely.runtime.async_runner import (
+    async_delegate,
+    async_gather,
+    async_parallel,
+    async_run,
+)
+
+# ─── Sandbox ──────────────────────────────────────────────────────────────
+from infrarely.runtime.sandbox import (
+    ResourceMeter,
+    Sandbox,
+    SandboxViolation,
+)
+from infrarely.runtime.sandbox import (
+    SandboxGuard as SandboxGuardCls,
+)
+
+# ─── Scaling ──────────────────────────────────────────────────────────────
+from infrarely.runtime.scaling import (
+    CoordinationManager,
+    MemoryBackend,
+    SQLiteBackend,
+    StateBackend,
+    create_backend,
+)
+
+# ─── Workflow ─────────────────────────────────────────────────────────────────
+from infrarely.runtime.workflow import Workflow, parallel, step
+
+# ─── Compliance ───────────────────────────────────────────────────────────
+from infrarely.security.compliance import (
+    ActionType,
+    ComplianceEntry,
+    ComplianceLog,
+    get_compliance_log,
 )
 
 # ─── Input Sanitization ──────────────────────────────────────────────
@@ -442,104 +452,106 @@ from infrarely.security.key_rotation import (
     rotate_api_key,
 )
 
-# ─── Tool Execution Sandbox ──────────────────────────────────────────
-from infrarely.platform.tool_sandbox import (
-    ToolSandboxPolicy,
-    ToolSandboxGuard as ToolSandboxGuardCls_,
-    ToolSandboxViolation,
-    ToolSandboxResult,
-    get_tool_sandbox_guard,
+# ─── Security ─────────────────────────────────────────────────────────────────
+from infrarely.security.security import (
+    DetectionResult,
+    InjectionType,
+    SecurityGuard,
+    SecurityPolicy,
+    ThreatLevel,
+    get_audit_log,
+    get_security_guard,
 )
 
 ToolSandboxGuard = ToolSandboxGuardCls_
 
 # ─── Self-Healing ─────────────────────────────────────────────────────
-from infrarely.platform.self_heal import (
-    SelfHealEngine,
-    SelfHealRule,
-    SelfHealTrigger,
-    SelfHealAction,
-    HealEvent,
-    PerformanceWindow,
-    get_self_heal_engine,
-)
+# ─── Core (Agent + factories) ────────────────────────────────────────────────
+from infrarely.core.agent import Agent, agent
+from infrarely.core.agent import shutdown as _shutdown_fn
+
+# ─── Dashboard ────────────────────────────────────────────────────────────────
+from infrarely.observability.dashboard import Dashboard as _DashboardClass
 
 # ─── Agent Collaboration Protocol (ACP) ───────────────────────────────
 from infrarely.platform.acp import (
-    ACPMessage,
-    ACPResponse,
-    ACPEndpoint,
-    ACPIdentity,
-    ACPStatus,
-    ACPTransport,
+    ACP_VERSION,
     ACPAdapter,
-    ACPRegistry,
-    ACPServer,
+    ACPEndpoint,
     ACPExchange,
     ACPFramework,
-    ACP_VERSION,
+    ACPIdentity,
+    ACPMessage,
+    ACPRegistry,
+    ACPResponse,
+    ACPServer,
+    ACPStatus,
+    ACPTransport,
     get_acp_registry,
     get_acp_transport,
 )
 
+# ─── Agent Performance Benchmarking ────────────────────────────────────────
+from infrarely.platform.benchmark import (
+    BENCHMARK_VERSION,
+    BenchmarkMetrics,
+    BenchmarkRegistry,
+    BenchmarkReport,
+    BenchmarkRunner,
+    BenchmarkSuite,
+    BenchmarkTask,
+    FrameworkBaseline,
+    MetricDefinition,
+    TaskResult,
+    _reset_benchmark_registry,
+    get_baseline,
+    get_benchmark_registry,
+    list_baselines,
+    run_benchmark,
+)
+
 # ─── Agent Marketplace ─────────────────────────────────────────────────
 from infrarely.platform.marketplace import (
-    PackageMeta,
-    PackageVersion,
-    PackageStatus,
-    PackageCategory,
-    PackageValidator,
-    InstalledPackage,
-    MarketplaceRegistry,
-    PackageManager,
-    Marketplace,
     MARKETPLACE_VERSION,
-    get_marketplace,
+    InstalledPackage,
+    Marketplace,
+    MarketplaceRegistry,
+    PackageCategory,
+    PackageManager,
+    PackageMeta,
+    PackageStatus,
+    PackageValidator,
+    PackageVersion,
     _reset_marketplace,
+    get_marketplace,
 )
 
 # ─── Natural Language Agent Configuration ──────────────────────────────────
 from infrarely.platform.nlconfig import (
-    NLConfigurator,
-    DescriptionParser,
+    NLCONFIG_VERSION,
     AgentBlueprint,
     BlueprintCompiler,
-    GuardrailRule,
+    DescriptionParser,
     EscalationTrigger,
-    TopicScope,
-    PersonalityProfile,
-    SuggestedTool,
-    SuggestedCapability,
+    GuardrailRule,
     KnowledgeSchema,
-    NLCONFIG_VERSION,
-    get_nl_configurator,
+    NLConfigurator,
+    PersonalityProfile,
+    SuggestedCapability,
+    SuggestedTool,
+    TopicScope,
     _reset_nl_configurator,
+    get_nl_configurator,
 )
-
-# ─── Agent Performance Benchmarking ────────────────────────────────────────
-from infrarely.platform.benchmark import (
-    BenchmarkTask,
-    BenchmarkSuite,
-    BenchmarkRunner,
-    BenchmarkMetrics,
-    BenchmarkReport,
-    BenchmarkRegistry,
-    FrameworkBaseline,
-    TaskResult,
-    MetricDefinition,
-    run_benchmark,
-    get_benchmark_registry,
-    get_baseline,
-    list_baselines,
-    BENCHMARK_VERSION,
-    _reset_benchmark_registry,
+from infrarely.platform.self_heal import (
+    HealEvent,
+    PerformanceWindow,
+    SelfHealAction,
+    SelfHealEngine,
+    SelfHealRule,
+    SelfHealTrigger,
+    get_self_heal_engine,
 )
-
-# ─── Core (Agent + factories) ────────────────────────────────────────────────
-from infrarely.core.agent import Agent, agent, shutdown as _shutdown_fn
-
-# ─── Dashboard ────────────────────────────────────────────────────────────────
-from infrarely.observability.dashboard import Dashboard as _DashboardClass
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MODULE-LEVEL CONVENIENCE ACCESSORS

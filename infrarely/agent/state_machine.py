@@ -36,13 +36,12 @@ import threading
 import time
 import uuid
 from collections import OrderedDict
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from infrarely.observability import logger
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STATE ENUM — Deterministic cognitive states
@@ -645,7 +644,7 @@ class AgentStateMachine:
                 if loaded and loaded.checkpoint:
                     self._state = AgentStateRecord.from_dict(loaded.checkpoint)
                     logger.info(
-                        f"Restored from store checkpoint",
+                        "Restored from store checkpoint",
                         agent=self._state.agent_id,
                     )
                     return True
@@ -654,7 +653,7 @@ class AgentStateMachine:
         restored = AgentStateRecord.from_dict(self._state.checkpoint)
         self._state = restored
         logger.info(
-            f"Restored from in-memory checkpoint",
+            "Restored from in-memory checkpoint",
             agent=self._state.agent_id,
             state=self._state.current_state.value,
         )
@@ -1054,7 +1053,7 @@ class StateMachineManager:
             self._machines[state.agent_id] = machine
 
             logger.info(
-                f"StateMachineManager: created agent",
+                "StateMachineManager: created agent",
                 agent_id=state.agent_id,
                 namespace=namespace,
             )
@@ -1072,7 +1071,7 @@ class StateMachineManager:
                 machine = AgentStateMachine(state, self._guards, self._store)
                 self._machines[agent_id] = machine
                 logger.info(
-                    f"StateMachineManager: restored agent from store",
+                    "StateMachineManager: restored agent from store",
                     agent_id=agent_id,
                     state=state.current_state.value,
                 )

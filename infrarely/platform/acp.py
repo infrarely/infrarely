@@ -60,11 +60,9 @@ import threading
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
-from urllib.parse import urljoin
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PROTOCOL CONSTANTS
@@ -99,7 +97,7 @@ class ACPFramework(enum.Enum):
     """Known agent frameworks for interoperability."""
 
     INFRARELY = "infrarely"
-    AOS = "infrarely"  # legacy alias
+    INFRARELY_ALIAS = "infrarely"
     LANGCHAIN = "langchain"
     CREWAI = "crewai"
     AUTOGPT = "autogpt"
@@ -582,7 +580,7 @@ class ACPRegistry:
 
         Example::
 
-            aos.acp_registry.register(
+            infrarely.acp_registry.register(
                 "langchain-researcher",
                 "http://researcher-service:8080",
                 framework="langchain",
@@ -719,7 +717,7 @@ class ACPAdapter:
     @staticmethod
     def response_to_result(response: ACPResponse) -> Any:
         """Convert an ACPResponse to an InfraRely Result."""
-        from infrarely.core.result import Result, Error, ErrorType
+        from infrarely.core.result import Error, ErrorType, Result
 
         if response.success:
             return Result(
@@ -904,8 +902,7 @@ class ACPServer:
         if self._running:
             return
 
-        from http.server import HTTPServer, BaseHTTPRequestHandler
-        import io
+        from http.server import BaseHTTPRequestHandler, HTTPServer
 
         server_ref = self
 

@@ -14,7 +14,7 @@ This module provides layered defense:
 Usage::
 
     infrarely.configure(
-        security=aos.SecurityPolicy(
+        security=infrarely.SecurityPolicy(
             prompt_injection_detection=True,
             injection_action="block",
             audit_all_inputs=True,
@@ -24,14 +24,13 @@ Usage::
 
 from __future__ import annotations
 
-import re
-import time
-import threading
 import hashlib
+import re
+import threading
+import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
-
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # THREAT CLASSIFICATION

@@ -47,11 +47,11 @@ class Integration:
 
 from infrarely.integrations.github import GitHubIntegration
 from infrarely.integrations.gmail import GmailIntegration
-from infrarely.integrations.slack import SlackIntegration
-from infrarely.integrations.postgres import PostgresIntegration
 from infrarely.integrations.notion import NotionIntegration
-from infrarely.integrations.webhook import WebhookIntegration
+from infrarely.integrations.postgres import PostgresIntegration
 from infrarely.integrations.rest_api import RestAPIIntegration
+from infrarely.integrations.slack import SlackIntegration
+from infrarely.integrations.webhook import WebhookIntegration
 
 __all__ = [
     "Integration",

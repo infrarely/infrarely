@@ -30,65 +30,51 @@ import uuid
 import weakref
 from collections import OrderedDict
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, TYPE_CHECKING
+from typing import Any, Callable, Dict, List, Optional
 
-from infrarely.core.config import get_config, _ensure_configured, configure
-from infrarely.core.result import Result, Error, ErrorType, _ok, _fail
-from infrarely.core.run_store import RunStore
-from infrarely.memory.memory import AgentMemory
-from infrarely.memory.knowledge import KnowledgeManager, get_knowledge_manager
+from infrarely.core.config import _ensure_configured, get_config
 from infrarely.core.decorators import (
-    ToolRegistry,
-    get_tool_registry,
-    CapabilityRegistry,
     get_capability_registry,
+    get_tool_registry,
 )
+from infrarely.core.result import ErrorType, Result, _fail
+from infrarely.core.run_store import RunStore
+from infrarely.core.streaming import AsyncStreamIterator, StreamIterator
+from infrarely.internal.bridge import ExecutionEngine
+from infrarely.internal.state_bridge import AgentState, StateMachine
+from infrarely.memory.knowledge import KnowledgeManager, get_knowledge_manager
+from infrarely.memory.memory import AgentMemory
 from infrarely.observability.observability import (
     ExecutionTrace,
-    TraceStore,
     HealthReport,
-    MetricsCollector,
-    get_metrics,
+    TraceStore,
     get_logger,
+    get_metrics,
 )
-from infrarely.observability.trace_renderer import render_terminal, render_html
-from infrarely.internal.state_bridge import AgentState, StateMachine
-from infrarely.internal.bridge import ExecutionEngine
+from infrarely.observability.trace_renderer import render_html, render_terminal
+from infrarely.platform.acp import (
+    ACPAdapter,
+    ACPEndpoint,
+    ACPIdentity,
+    ACPMessage,
+    get_acp_transport,
+)
 from infrarely.platform.hitl import (
-    HITLGate,
     ApprovalRule,
-    ApprovalStatus,
-    get_approval_manager,
+    HITLGate,
 )
-from infrarely.security.security import (
-    SecurityGuard,
-    SecurityPolicy,
-    get_security_guard,
-)
-from infrarely.core.streaming import StreamIterator, AsyncStreamIterator
-from infrarely.security.input_sanitizer import InputSanitizer, get_input_sanitizer
 from infrarely.platform.self_heal import (
+    _ACTION_MAP,
+    SelfHealAction,
     SelfHealEngine,
     SelfHealRule,
     SelfHealTrigger,
-    SelfHealAction,
-    HealEvent,
-    _ACTION_MAP,
-)
-from infrarely.platform.acp import (
-    ACPMessage,
-    ACPResponse,
-    ACPEndpoint,
-    ACPIdentity,
-    ACPTransport,
-    ACPAdapter,
-    ACPStatus,
-    ACPExchange,
-    ACP_VERSION,
-    get_acp_transport,
-    get_acp_registry,
 )
 from infrarely.runtime.paths import MEMORY_DB, TRACES_DB
+from infrarely.security.input_sanitizer import get_input_sanitizer
+from infrarely.security.security import (
+    SecurityGuard,
+)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GLOBAL AGENT REGISTRY — tracks all live agents via weak references

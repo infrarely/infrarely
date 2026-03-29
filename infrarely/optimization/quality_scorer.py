@@ -14,9 +14,11 @@ Capabilities below 0.6 trigger review.
 """
 
 from __future__ import annotations
+
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
+
 from infrarely.observability import logger
 
 

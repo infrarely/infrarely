@@ -30,7 +30,6 @@ from typing import Any, Dict, List, Optional
 
 from infrarely.runtime.paths import LOG_DIR, LOG_FILE, TRACES_DB
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # TRACE DATA STRUCTURES
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -159,8 +158,7 @@ class TraceStore:
         self._init_tables()
 
     def _init_tables(self):
-        self._conn.executescript(
-            """
+        self._conn.executescript("""
             CREATE TABLE IF NOT EXISTS traces (
                 trace_id    TEXT PRIMARY KEY,
                 agent_name  TEXT NOT NULL,
@@ -173,8 +171,7 @@ class TraceStore:
             );
             CREATE INDEX IF NOT EXISTS idx_traces_agent
                 ON traces(agent_name, started_at);
-        """
-        )
+        """)
         self._conn.commit()
 
     def save(self, trace: ExecutionTrace) -> None:

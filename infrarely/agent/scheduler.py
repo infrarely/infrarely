@@ -4,6 +4,7 @@ Priority task queue for future concurrent capability workflows.
 Currently operates synchronously; async workers can be added later.
 """
 from __future__ import annotations
+
 import queue
 import threading
 import time
@@ -11,6 +12,7 @@ import uuid
 from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any, Callable, Dict, List, Optional
+
 import infrarely.core.app_config as config
 from infrarely.observability import logger
 

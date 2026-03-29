@@ -16,17 +16,14 @@ Each step has: timeout, fallback, retry, condition.
 
 from __future__ import annotations
 
-import inspect
-
 import concurrent.futures
+import inspect
 import re
-import time
 import threading
-import traceback
+import time
 import uuid
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STEP DEFINITION
@@ -380,9 +377,7 @@ class Workflow:
             elapsed = (time.monotonic() - start) * 1000
 
             # Check if tool returned an infrarely-namespaced error marker
-            if isinstance(result, dict) and (
-                result.get("__infrarely_error") or result.get("__aos_error")
-            ):
+            if isinstance(result, dict) and result.get("__infrarely_error"):
                 error_msg = result.get("message", "Tool failed")
                 if step.fallback and step.fallback in self._steps:
                     fb_result = self._execute_step(self._steps[step.fallback])
@@ -580,7 +575,7 @@ def parallel(tasks: List[Tuple[Any, str]], timeout: int = 60) -> List[Any]:
             (writer,     "Write summary"),
         ])
     """
-    from infrarely.core.result import Result, _fail, ErrorType
+    from infrarely.core.result import ErrorType, _fail
 
     results = [None] * len(tasks)
 

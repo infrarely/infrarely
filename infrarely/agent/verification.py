@@ -20,10 +20,12 @@ Design contract
 """
 
 from __future__ import annotations
+
 import json
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
+import infrarely.core.app_config as config
 from infrarely.agent.state import (
     ExecutionContract,
     ResponseType,
@@ -33,7 +35,6 @@ from infrarely.agent.state import (
     VerificationType,
 )
 from infrarely.observability import logger
-import infrarely.core.app_config as config
 
 
 # ─── Verification result ──────────────────────────────────────────────────────

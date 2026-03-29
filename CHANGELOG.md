@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2026-03-12
 
 ### Added
-- Initial release of InfraRely (rebranded from AOS SDK + Student Agent)
+- Initial release of InfraRely (rebranded from legacy SDK + Student Agent)
 - **Core framework**: Agent, Result, Config, Events, Decorators, Streaming
 - **7-layer architecture**: Execution contracts → Capability graphs → Infrastructure → Verification → Adaptive intelligence → Multi-agent runtime → Autonomous evolution
 - **Rule-based intent classifier**: Zero-token intent classification with weighted keyword matching

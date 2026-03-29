@@ -9,6 +9,7 @@ Each scenario documents expected token usage:
 """
 
 from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import List, Optional
 

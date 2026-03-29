@@ -15,11 +15,12 @@ Safety:
 """
 
 from __future__ import annotations
-import time
-from collections import Counter, defaultdict
+
+from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
+
 from infrarely.observability import logger
 
 

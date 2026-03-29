@@ -5,9 +5,9 @@ A registry where developers publish capabilities and other developers
 install them like npm packages.
 
     # CLI usage
-    aos install @community/web-researcher
-    aos install @community/code-reviewer
-    aos install @enterprise/salesforce-sync
+    infrarely install @community/web-researcher
+    infrarely install @community/code-reviewer
+    infrarely install @enterprise/salesforce-sync
 
     # Python usage
     from infrarely.platform.marketplace import marketplace
@@ -35,17 +35,13 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import threading
 import time
-import uuid
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from infrarely.runtime.paths import PACKAGES_DIR
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONSTANTS
@@ -204,8 +200,7 @@ class PackageMeta:
             capabilities=d.get("capabilities", []),
             dependencies=d.get("dependencies", []),
             python_requires=d.get("python_requires", ">=3.10"),
-            infrarely_requires=d.get("infrarely_requires")
-            or d.get("aos_requires", ">=0.1.0"),
+            infrarely_requires=d.get("infrarely_requires", ">=0.1.0"),
             homepage=d.get("homepage", ""),
             repository=d.get("repository", ""),
             documentation=d.get("documentation", ""),

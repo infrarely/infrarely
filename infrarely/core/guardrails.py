@@ -3,8 +3,8 @@ from __future__ import annotations
 import inspect
 import json
 import threading
-import uuid
 import types
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import (
@@ -273,9 +273,7 @@ def verify_output(
             )
         return
 
-    if isinstance(output, Mapping) and (
-        output.get("__infrarely_error") or output.get("__aos_error")
-    ):
+    if isinstance(output, Mapping) and output.get("__infrarely_error"):
         _raise_violation(
             "IR-005",
             "OUTPUT_VERIFICATION",

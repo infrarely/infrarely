@@ -17,10 +17,8 @@ Design rules
 """
 
 from __future__ import annotations
-from typing import Optional
 
-from infrarely.agent.state import ToolResult, ResponseType
-
+from infrarely.agent.state import ToolResult
 
 # ── per-tool "nothing found" messages ────────────────────────────────────────
 _EMPTY_MESSAGES = {

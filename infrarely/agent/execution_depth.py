@@ -3,7 +3,9 @@ agent/execution_depth.py  — Gap 2: Execution Depth Guard
 Prevents recursive tool/capability loops from running forever.
 """
 from __future__ import annotations
+
 import threading
+
 import infrarely.core.app_config as config
 from infrarely.observability import logger
 

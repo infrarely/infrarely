@@ -11,7 +11,8 @@ This means Layer 2 is purely additive — single-tool routing is untouched.
 """
 
 from __future__ import annotations
-from typing import Dict, List, Optional, Tuple
+
+from typing import Dict, List, Optional
 
 from infrarely.agent.capability import Capability, CapabilityPlan, CapabilityStep
 from infrarely.agent.state import TaskState

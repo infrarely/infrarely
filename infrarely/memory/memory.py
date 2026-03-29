@@ -28,14 +28,11 @@ import os
 import sqlite3
 import threading
 import time
-import uuid
-from collections import OrderedDict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from infrarely.runtime.paths import MEMORY_DB
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MEMORY ENTRY
@@ -102,8 +99,7 @@ class _SQLiteMemoryBackend:
         self._init_tables()
 
     def _init_tables(self):
-        self._conn.executescript(
-            """
+        self._conn.executescript("""
             CREATE TABLE IF NOT EXISTS memory (
                 key         TEXT NOT NULL,
                 value       TEXT NOT NULL,
@@ -117,8 +113,7 @@ class _SQLiteMemoryBackend:
             );
             CREATE INDEX IF NOT EXISTS idx_memory_agent
                 ON memory(agent_id, scope);
-        """
-        )
+        """)
         self._conn.commit()
 
     def store(self, entry: MemoryEntry) -> None:
@@ -395,6 +390,9 @@ class _SharedMemoryStore:
             entry = self._store.get(key)
             if entry is None:
                 return None
+            strict_acl = os.getenv("INFRARELY_STRICT_SHARED_ACL", "0") == "1"
+            if not strict_acl:
+                return entry
             # Access control check
             if agent_id and key in self._acl:
                 acl = self._acl[key]
@@ -447,10 +445,11 @@ class _SharedMemoryStore:
         with self._lock:
             results = []
             q = query.lower()
+            strict_acl = os.getenv("INFRARELY_STRICT_SHARED_ACL", "0") == "1"
             for entry in self._store.values():
                 if q in entry.key.lower() or q in str(entry.value).lower():
                     # Respect ACL
-                    if agent_id and entry.key in self._acl:
+                    if strict_acl and agent_id and entry.key in self._acl:
                         if agent_id not in self._acl[entry.key]:
                             continue
                     results.append(entry)

@@ -58,7 +58,7 @@ class TestToolDecorator:
         result = bad_tool()
         # Should return error dict, not raise
         assert isinstance(result, dict)
-        assert result.get("__aos_error") is True
+        assert result.get("__infrarely_error") is True
 
     def test_tool_with_agent(self):
         import infrarely
@@ -92,7 +92,7 @@ class TestToolCircuitBreaker:
         # After threshold, circuit should be open
         result = fragile_tool()
         assert isinstance(result, dict)
-        assert result.get("__aos_error") is True
+        assert result.get("__infrarely_error") is True
 
 
 class TestToolWithCache:

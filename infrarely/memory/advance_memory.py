@@ -8,12 +8,14 @@ Semantic Memory  — facts ("student is in year 2", "CS301 has exam in 4 weeks")
 Procedural Memory— learned patterns ("when user asks about exam, show topics first")
 """
 from __future__ import annotations
+
 import json
 import os
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+
 import infrarely.core.app_config as config
 from infrarely.observability import logger
 

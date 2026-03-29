@@ -14,7 +14,6 @@ that a non-technical person can read and understand.
 from __future__ import annotations
 
 import textwrap
-import time
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
@@ -246,9 +245,9 @@ class Result:
 
         # Status
         if self.success:
-            lines.append(f"│ Status: Completed successfully")
+            lines.append("│ Status: Completed successfully")
         elif self.error and self.error.recovered:
-            lines.append(f"│ Status: Recovered from error")
+            lines.append("│ Status: Recovered from error")
         else:
             err_type = self.error.type.value if self.error else "UNKNOWN"
             lines.append(f"│ Status: Failed ({err_type})")

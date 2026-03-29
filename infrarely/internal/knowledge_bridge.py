@@ -7,7 +7,6 @@ Handles knowledge source registration, indexing, and querying.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
 from infrarely.memory.knowledge import KnowledgeManager, KnowledgeResult, get_knowledge_manager
 
 

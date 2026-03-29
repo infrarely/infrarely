@@ -35,23 +35,20 @@ Hardware: Fits entirely in 8GB RAM, no GPU required.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import os
 import re
-import sqlite3
 import threading
 import time
 import uuid
-from collections import OrderedDict, defaultdict
-from dataclasses import asdict, dataclass, field
+from collections import defaultdict
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from enum import Enum
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from infrarely.observability import logger
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # KNOWLEDGE SOURCE TYPES

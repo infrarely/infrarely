@@ -21,7 +21,7 @@ Usage:
         return agent.run("Generate daily standup summary")
 
     # Fire an event programmatically
-    aos.event_bus.emit("ticket_created", {"title": "Login broken"})
+    infrarely.event_bus.emit("ticket_created", {"title": "Login broken"})
 
 Architecture:
     EventBus         — Publish/subscribe event system
@@ -32,13 +32,10 @@ Architecture:
 
 from __future__ import annotations
 
-import json
-import re
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Set
-
+from typing import Any, Callable, Dict, List, Optional
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EVENT BUS — Publish/Subscribe
@@ -457,7 +454,7 @@ class ScheduleManager:
                 time.sleep(interval)
 
         self._thread = threading.Thread(
-            target=loop, daemon=True, name="aos-schedule-manager"
+            target=loop, daemon=True, name="infrarely-schedule-manager"
         )
         self._thread.start()
 

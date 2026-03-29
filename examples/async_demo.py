@@ -37,7 +37,7 @@ async def main():
 
     # ── Parallel async execution ──────────────────────────────────────────
     print("\n─── Parallel Async Execution (3 tasks) ───")
-    results = await aos.async_gather(
+    results = await infrarely.async_gather(
         (researcher, "What is 10 * 10?"),
         (writer, "What is 7 + 3?"),
         (analyst, "What is 144 / 12?"),
@@ -50,13 +50,13 @@ async def main():
 
     # ── Async delegation ──────────────────────────────────────────────────
     print("\n─── Async Delegation ───")
-    result = await aos.async_delegate(researcher, writer, "What is 5 + 5?")
+    result = await infrarely.async_delegate(researcher, writer, "What is 5 + 5?")
     print(f"Delegated result: {result.output}")
 
     # ── Async parallel with more tasks ────────────────────────────────────
     print("\n─── Async Parallel (batch) ───")
     tasks = [(researcher, f"What is {i} * {i}?") for i in range(2, 6)]
-    results = await aos.async_parallel(tasks)
+    results = await infrarely.async_parallel(tasks)
     for i, r in enumerate(results):
         print(f"  {i+2}² = {r.output}")
 

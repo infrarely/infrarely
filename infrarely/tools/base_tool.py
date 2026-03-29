@@ -14,10 +14,11 @@ Hardening over v1
 """
 
 from __future__ import annotations
+
 import random
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 import infrarely.core.app_config as config
 from infrarely.agent.state import ResponseType, TaskState, ToolResult

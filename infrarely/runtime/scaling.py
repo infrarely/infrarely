@@ -26,11 +26,9 @@ import sqlite3
 import threading
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from infrarely.runtime.paths import STATE_DB
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STATE BACKEND INTERFACE

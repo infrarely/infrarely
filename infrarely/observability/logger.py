@@ -44,8 +44,8 @@ from __future__ import annotations
 import json
 import os
 import sys
-import time
 import threading
+import time
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from typing import Any, Dict, Optional
@@ -177,7 +177,7 @@ def _write_session_header(student_id: str):
     now = datetime.now(timezone.utc).isoformat()
     lines = [
         "=" * _LINE_W,
-        f"  STUDENT LIFE ASSISTANT — SESSION LOG",
+        "  STUDENT LIFE ASSISTANT — SESSION LOG",
         f"  Session ID : {_session_id}",
         f"  Student    : {student_id}",
         f"  Started    : {now}",
@@ -197,7 +197,7 @@ def _write_session_footer(app_cfg=None):
     lines = [
         "",
         "-" * _LINE_W,
-        f"  SESSION SUMMARY",
+        "  SESSION SUMMARY",
         f"  Ended      : {now}",
         f"  Duration   : {elapsed:.1f}s",
     ]

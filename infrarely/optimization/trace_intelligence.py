@@ -13,13 +13,14 @@ Output stored in logs/analytics/.
 """
 
 from __future__ import annotations
+
 import json
 import os
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
-import infrarely.core.app_config as config
+from typing import Any, Dict, List
+
 from infrarely.observability import logger
 from infrarely.runtime.paths import ANALYTICS_DIR
 

@@ -41,13 +41,12 @@ import json
 import time
 import uuid
 from collections import OrderedDict
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from enum import Enum, auto
+from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from infrarely.observability import logger
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # RAW PLAN SCHEMA — LLM must output this exactly

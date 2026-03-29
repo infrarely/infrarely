@@ -30,8 +30,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
-
+from typing import Any, Dict, List, Optional
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PRICING TABLE — per-model USD pricing (per 1M tokens)

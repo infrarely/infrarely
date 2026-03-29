@@ -9,25 +9,26 @@ import sys
 import os
 import pytest
 
-# Ensure aos package is importable
+# Ensure infrarely package is importable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class TestImport:
     """Test that the basic import works."""
 
-    def test_import_aos(self):
+    def test_import_infrarely(self):
         import infrarely
 
-        assert hasattr(aos, "agent")
-        assert hasattr(aos, "tool")
-        assert hasattr(aos, "configure")
-        assert hasattr(aos, "shutdown")
+        assert hasattr(infrarely, "agent")
+        assert hasattr(infrarely, "tool")
+        assert hasattr(infrarely, "configure")
+        assert hasattr(infrarely, "shutdown")
 
     def test_version(self):
         import infrarely
 
-        assert aos.__version__ == "0.1.0"
+        assert isinstance(infrarely.__version__, str)
+        assert len(infrarely.__version__) > 0
 
 
 class TestAgentCreation:

@@ -1,5 +1,5 @@
 """
-hello_agent.py — The simplest possible AOS agent (3 lines)
+hello_agent.py — The simplest possible InfraRely agent (3 lines)
 ═══════════════════════════════════════════════════════════════════════════════
 """
 

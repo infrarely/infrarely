@@ -7,7 +7,7 @@ Problem: ``infrarely.configure(api_key="sk-...")`` sets the key once at startup.
          If the key is compromised, the only option is to restart the
          entire process.  In production, this means downtime.
 
-Solution: ``aos.rotate_api_key("sk-new-key")`` live-swaps the key across
+Solution: ``infrarely.rotate_api_key("sk-new-key")`` live-swaps the key across
           all agents and the execution engine, with validation and rollback.
 
 Design:
@@ -24,7 +24,6 @@ import threading
 import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # KEY ROTATION EVENT
@@ -65,14 +64,14 @@ class KeyManager:
     Usage::
 
         import infrarely
-        manager = aos.key_manager
+        manager = infrarely.key_manager
 
         # Rotate key
         result = manager.rotate("sk-new-key-here")
         assert result.success
 
         # Or use convenience function
-        aos.rotate_api_key("sk-new-key-here")
+        infrarely.rotate_api_key("sk-new-key-here")
 
     Thread-safe singleton.
     """
@@ -278,7 +277,7 @@ def rotate_api_key(new_key: str, *, source: str = "manual") -> KeyRotationEvent:
     Usage::
 
         import infrarely
-        event = aos.rotate_api_key("sk-new-key-here")
+        event = infrarely.rotate_api_key("sk-new-key-here")
         assert event.success
     """
     return get_key_manager().rotate(new_key, source=source)

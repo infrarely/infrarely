@@ -3,11 +3,12 @@ agent/tool_validator.py  — Gap 4: Tool Output Validator
 Rejects structurally invalid or suspiciously large ToolResults.
 """
 from __future__ import annotations
+
 import json
 from typing import Optional
+
 import infrarely.core.app_config as config
 from infrarely.agent.state import ExecutionContract, ToolResult
-from infrarely.observability import logger
 
 _MAX_CHARS = getattr(config, "MAX_TOOL_DATA_CHARS", 50_000)
 _STRICT    = getattr(config, "STRICT_TOOL_VALIDATION", True)

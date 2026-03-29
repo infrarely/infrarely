@@ -18,19 +18,18 @@ Usage::
 
 from __future__ import annotations
 
-import copy
+import hashlib
 import json
 import os
 import time
-import hashlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from infrarely.runtime.paths import VERSIONS_DIR
 
 if TYPE_CHECKING:
     from infrarely.core.agent import Agent
-    from infrarely.platform.evaluation import EvalSuite, EvalSuiteResults
+    from infrarely.platform.evaluation import EvalSuite
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

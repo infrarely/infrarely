@@ -14,8 +14,10 @@ consult before applying any adaptive change.
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+
+from dataclasses import dataclass
+from typing import Any, Dict, List
+
 from infrarely.observability import logger
 
 

@@ -14,11 +14,10 @@ from __future__ import annotations
 import json
 import threading
 import time
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from typing import Any, Dict, List, Optional
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import Optional
 
-from infrarely.observability.observability import get_metrics, get_logger
-
+from infrarely.observability.observability import get_logger, get_metrics
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # HEALTH SERVER

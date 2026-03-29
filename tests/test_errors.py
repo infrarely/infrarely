@@ -69,7 +69,7 @@ class TestShutdownAgent:
         agent.shutdown()
         result = agent.run("anything")
         assert not result.success
-        assert result.error.type == aos.ErrorType.STATE_CORRUPTED
+        assert result.error.type == infrarely.ErrorType.STATE_CORRUPTED
 
 
 class TestResultExplain:
