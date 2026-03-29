@@ -940,6 +940,26 @@ def cmd_runs(args):
         )
 
 
+def cmd_trace(args):
+    """Render execution trace for a run."""
+    from infrarely.core.run_store import RunStore
+    from infrarely.observability.trace_renderer import render_terminal, render_html
+
+    store = RunStore()
+    run = store.load(args.run_id)
+    trace_data = run.get("execution_trace", {})
+    if not isinstance(trace_data, dict):
+        trace_data = {}
+    trace_data.setdefault("run_id", args.run_id)
+
+    if args.html:
+        path = f".infrarely/runs/{args.run_id}.html"
+        render_html(trace_data, path)
+        print(f"Report: {path}")
+    else:
+        render_terminal(trace_data)
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -962,6 +982,7 @@ Examples:
     infrarely logs --level ERROR              Show error logs
     infrarely replay <run_id>                 Replay a saved run
     infrarely runs                            List recent saved runs
+    infrarely trace <run_id> [--html]         Render trace report
   infrarely info                            SDK info
   infrarely test                            Run test suite
   aos                                 Interactive REPL
@@ -1110,6 +1131,15 @@ Examples:
     p_runs = sub.add_parser("runs", help="List recent saved runs")
     p_runs.add_argument("--limit", "-n", type=int, default=20, help="Max runs")
 
+    # trace
+    p_trace = sub.add_parser("trace", help="Render execution trace for a run")
+    p_trace.add_argument("run_id", help="Run ID to inspect")
+    p_trace.add_argument(
+        "--html",
+        action="store_true",
+        help="Write HTML report to .infrarely/runs/<run_id>.html",
+    )
+
     args = parser.parse_args()
 
     # Suppress file logging for CLI unless configured
@@ -1157,6 +1187,8 @@ Examples:
         cmd_replay(args)
     elif args.command == "runs":
         cmd_runs(args)
+    elif args.command == "trace":
+        cmd_trace(args)
     else:
         # No subcommand → interactive REPL
         cmd_repl(args)

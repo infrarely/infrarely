@@ -23,11 +23,13 @@ Public API on Agent:
 
 from __future__ import annotations
 
+import os
 import threading
 import time
 import uuid
 import weakref
 from collections import OrderedDict
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, TYPE_CHECKING
 
 from infrarely.core.config import get_config, _ensure_configured, configure
@@ -49,6 +51,7 @@ from infrarely.observability.observability import (
     get_metrics,
     get_logger,
 )
+from infrarely.observability.trace_renderer import render_terminal, render_html
 from infrarely.internal.state_bridge import AgentState, StateMachine
 from infrarely.internal.bridge import ExecutionEngine
 from infrarely.platform.hitl import (
@@ -407,6 +410,7 @@ class Agent:
         """
 
         def _return_result(res: Result) -> Result:
+            self._render_trace_if_dev(res)
             self._persist_run(goal, res)
             return res
 
@@ -575,6 +579,28 @@ class Agent:
             _RUN_STORE.save(run_id, payload)
         except Exception:
             # Run persistence is best-effort; never block normal execution.
+            pass
+
+    def _render_trace_if_dev(self, result: Result) -> None:
+        """Render terminal/HTML trace in development mode. Never raises."""
+        if os.getenv("INFRARELY_DEV", "0") != "1":
+            return
+        try:
+            run_id = str(result.trace_id or "unknown")
+            trace = self.get_trace(run_id) if result.trace_id else None
+            if trace is None:
+                return
+
+            trace_data = trace.to_dict()
+            trace_data["run_id"] = run_id
+
+            render_terminal(trace_data)
+
+            html_path = Path(".infrarely/runs") / f"{run_id}.html"
+            html_path.parent.mkdir(parents=True, exist_ok=True)
+            render_html(trace_data, str(html_path))
+        except Exception:
+            # Trace rendering is best-effort; never block normal execution.
             pass
 
     # ═══════════════════════════════════════════════════════════════════

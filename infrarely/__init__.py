@@ -106,6 +106,8 @@ __all__ = [
     "guardrail_registry",
     "replay",
     "list_agent_runs",
+    "render_terminal",
+    "render_html",
     # Knowledge
     "knowledge",
     # Memory
@@ -267,6 +269,7 @@ __all__ = [
 from infrarely.core.result import Result, Error, ErrorType
 from infrarely.core.guardrails import GuardrailViolation, REGISTRY as guardrail_registry
 from infrarely.core.replay import replay, list_runs as list_agent_runs
+from infrarely.observability.trace_renderer import render_terminal, render_html
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 from infrarely.core.config import configure, get_config
