@@ -135,7 +135,7 @@ class Error:
     suggestion: str = ""  # what the developer should do
     details: Dict[str, Any] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.suggestion:
             self.suggestion = _SUGGESTIONS.get(self.type.value, _SUGGESTIONS["UNKNOWN"])
 
@@ -196,6 +196,7 @@ class Result:
     _goal: str = ""
     _agent_name: str = ""
     _plan_source: str = ""  # "deterministic" | "llm" | "cached"
+    _metadata: Dict[str, Any] = field(default_factory=dict)
 
     # ── Token tracking ────────────────────────────────────────────────────────
     tokens_used: int = 0
@@ -340,7 +341,7 @@ def _ok(
     duration_ms: float = 0.0,
     goal: str = "",
     agent_name: str = "",
-    **kwargs,
+    **kwargs: Any,
 ) -> Result:
     """Build a success Result."""
     return Result(
@@ -365,7 +366,7 @@ def _fail(
     goal: str = "",
     agent_name: str = "",
     duration_ms: float = 0.0,
-    **kwargs,
+    **kwargs: Any,
 ) -> Result:
     """Build a failure Result."""
     return Result(

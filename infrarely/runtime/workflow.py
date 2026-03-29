@@ -215,7 +215,7 @@ class Workflow:
             "<=": lambda a, b: a <= b,
         }
         try:
-            return ops.get(op, lambda a, b: True)(actual, expected)
+            return bool(ops.get(op, lambda a, b: True)(actual, expected))
         except (TypeError, ValueError):
             return True
 
@@ -335,12 +335,14 @@ class Workflow:
 
         try:
             # Execute with timeout
-            result_container = [None]
-            error_container = [None]
+            result_container: List[Any] = [None]
+            error_container: List[Optional[Exception]] = [None]
+            tool = step.tool
+            assert tool is not None
 
-            def _run():
+            def _run() -> None:
                 try:
-                    result_container[0] = step.tool(**inputs)
+                    result_container[0] = tool(**inputs)
                 except Exception as e:
                     error_container[0] = e
 
@@ -577,9 +579,9 @@ def parallel(tasks: List[Tuple[Any, str]], timeout: int = 60) -> List[Any]:
     """
     from infrarely.core.result import ErrorType, _fail
 
-    results = [None] * len(tasks)
+    results: List[Optional[Any]] = [None] * len(tasks)
 
-    def _run_task(index: int, agent: Any, goal: str):
+    def _run_task(index: int, agent: Any, goal: str) -> None:
         try:
             results[index] = agent.run(goal)
         except Exception as e:

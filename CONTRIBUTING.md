@@ -122,4 +122,4 @@ InfraRely is an **infrastructure SDK**, not an application. Contributions should
 
 ## Questions?
 
-Open a GitHub Discussion or reach out at **contribute@infrarely.dev**.
+Open a GitHub Discussion or reach out at **contribute@infrarely.com**.

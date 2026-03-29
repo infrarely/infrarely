@@ -12,7 +12,7 @@ If you discover a security vulnerability in InfraRely, please report it responsi
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
-Instead, please email: **security@infrarely.dev**
+Instead, please email: **security@infrarely.com**
 
 ### What to include
 

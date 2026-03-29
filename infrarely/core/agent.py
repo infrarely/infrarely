@@ -30,7 +30,7 @@ import uuid
 import weakref
 from collections import OrderedDict
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, cast
 
 from infrarely.core.config import _ensure_configured, get_config
 from infrarely.core.decorators import (
@@ -224,9 +224,9 @@ class Agent:
         self._cap_registry = get_capability_registry()
         self._capabilities: Dict[str, Callable] = {}
         for fn in capabilities or []:
-            meta = self._cap_registry.get_meta(getattr(fn, "__name__", str(fn)))
-            if meta:
-                self._capabilities[meta.name] = fn
+            cap_meta = self._cap_registry.get_meta(getattr(fn, "__name__", str(fn)))
+            if cap_meta:
+                self._capabilities[cap_meta.name] = fn
             else:
                 fname = getattr(fn, "__name__", f"cap_{id(fn)}")
                 self._capabilities[fname] = fn
@@ -309,7 +309,7 @@ class Agent:
     @property
     def state(self) -> str:
         """Current cognitive state (IDLE, PLANNING, EXECUTING, etc.)."""
-        return self._state_machine.state_name
+        return str(self._state_machine.state_name)
 
     @property
     def memory(self) -> AgentMemory:
@@ -864,7 +864,7 @@ class Agent:
             )
 
         # Convert ACP response → InfraRely Result
-        result = ACPAdapter.response_to_result(acp_response)
+        result = cast(Result, ACPAdapter.response_to_result(acp_response))
 
         # Tag with delegation metadata
         result._metadata = {
@@ -965,14 +965,17 @@ class Agent:
         # Lazy-create the engine
         if self._self_heal_engine is None:
             self._self_heal_engine = SelfHealEngine(agent_name=self._name)
+
+            def _clear_memory() -> None:
+                if self._memory:
+                    self._memory.clear()
+
             # Wire up callbacks
             self._self_heal_engine._knowledge_add_fn = (
                 lambda key, val: self.knowledge.add_data(key, val)
             )
             self._self_heal_engine._config_set_fn = lambda k, v: cfg.set(k, v)
-            self._self_heal_engine._memory_clear_fn = lambda: (
-                self._memory.clear() if self._memory else None
-            )
+            self._self_heal_engine._memory_clear_fn = _clear_memory
             self._self_heal_engine._emit_fn = self._emit
 
         # Parse trigger
@@ -1059,6 +1062,8 @@ class Agent:
                 if not meta.circuit_breaker.allow():
                     cb_open += 1
 
+        tool_metrics = cast(Dict[str, Any], getattr(metrics, "_tool_metrics", {}))
+
         return HealthReport(
             agent_name=self._name,
             state=self.state,
@@ -1072,7 +1077,7 @@ class Agent:
             llm_calls_total=self._agent_llm_calls,
             knowledge_queries_total=0,
             circuit_breakers_open=cb_open,
-            last_error=metrics._tool_metrics.get("__last_error", {}).get("msg", ""),
+            last_error=tool_metrics.get("__last_error", {}).get("msg", ""),
         )
 
     def get_trace(self, trace_id: str) -> Optional[ExecutionTrace]:
@@ -1090,7 +1095,10 @@ class Agent:
 
     def get_recent_traces(self, limit: int = 20) -> List[Dict[str, Any]]:
         """Get recent execution traces for this agent."""
-        return self._trace_store.list_recent(agent_name=self._name, limit=limit)
+        return cast(
+            List[Dict[str, Any]],
+            self._trace_store.list_recent(agent_name=self._name, limit=limit),
+        )
 
     def explain(self) -> str:
         """
@@ -1109,7 +1117,11 @@ class Agent:
     # EVENT SYSTEM
     # ═══════════════════════════════════════════════════════════════════
 
-    def on(self, event: str, handler: Callable = None) -> Any:
+    def on(
+        self,
+        event: str,
+        handler: Optional[Callable[..., Any]] = None,
+    ) -> Any:
         """
         Subscribe to agent events.
 
@@ -1278,13 +1290,13 @@ class Agent:
         """
         from infrarely.runtime.async_runner import async_run
 
-        return await async_run(self, goal, context=context)
+        return cast(Result, await async_run(self, goal, context=context))
 
     # ═══════════════════════════════════════════════════════════════════
     # INTEGRATION: .use()
     # ═══════════════════════════════════════════════════════════════════
 
-    def use(self, *integrations_or_tools) -> "Agent":
+    def use(self, *integrations_or_tools: Any) -> "Agent":
         """
         Add integrations or tools to this agent in one call.
 
@@ -1466,12 +1478,15 @@ class Agent:
         from infrarely.platform.nlconfig import NLConfigurator
 
         configurator = NLConfigurator()
-        return configurator.create_agent(
-            description,
-            name=name,
-            tools=tools,
-            capabilities=capabilities,
-            config=config,
+        return cast(
+            Agent,
+            configurator.create_agent(
+                description,
+                name=name,
+                tools=tools,
+                capabilities=capabilities,
+                config=config,
+            ),
         )
 
     @property
@@ -1512,7 +1527,7 @@ class Agent:
     def __str__(self) -> str:
         return f"Agent('{self._name}')"
 
-    def __del__(self):
+    def __del__(self) -> None:
         try:
             _unregister_agent(self._name)
         except Exception:
