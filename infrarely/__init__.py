@@ -104,6 +104,8 @@ __all__ = [
     "ErrorType",
     "GuardrailViolation",
     "guardrail_registry",
+    "replay",
+    "list_agent_runs",
     # Knowledge
     "knowledge",
     # Memory
@@ -264,6 +266,7 @@ __all__ = [
 # ─── Result & Error types ────────────────────────────────────────────────────
 from infrarely.core.result import Result, Error, ErrorType
 from infrarely.core.guardrails import GuardrailViolation, REGISTRY as guardrail_registry
+from infrarely.core.replay import replay, list_runs as list_agent_runs
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 from infrarely.core.config import configure, get_config

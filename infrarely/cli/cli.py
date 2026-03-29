@@ -255,8 +255,7 @@ def cmd_test(args):
 
 def cmd_repl(args):
     """Interactive REPL mode."""
-    print(
-        f"""
+    print(f"""
 {BOLD}{CYAN}╔══════════════════════════════════════════════════════════════╗
 ║          InfraRely SDK — Interactive Agent Shell                   ║
 ║          Type a goal or command. Press Ctrl+C to exit.       ║
@@ -273,8 +272,7 @@ def cmd_repl(args):
     /explain        Toggle auto-explain
     /agent <name>   Switch agent
     /exit           Exit{RESET}
-"""
-    )
+""")
 
     agent_name = "cli-agent"
     agent = infrarely.agent(agent_name)
@@ -295,8 +293,7 @@ def cmd_repl(args):
                 if cmd == "/exit" or cmd == "/quit":
                     break
                 elif cmd == "/help":
-                    print(
-                        f"""
+                    print(f"""
   {DIM}/health         System health check
   /metrics        Metrics summary
   /traces [N]     Recent N traces (default 5)
@@ -308,8 +305,7 @@ def cmd_repl(args):
   /memory         Show memory keys
   /knowledge <text>  Add inline knowledge
   /exit           Exit the shell{RESET}
-"""
-                    )
+""")
                 elif cmd == "/health":
                     h = agent.health()
                     print(
@@ -691,7 +687,9 @@ def cmd_versions(args):
 
     elif args.action == "save":
         if not args.agent or not args.tag:
-            print(f"  {RED}Usage: infrarely versions save --agent <name> --tag <tag>{RESET}")
+            print(
+                f"  {RED}Usage: infrarely versions save --agent <name> --tag <tag>{RESET}"
+            )
             return
         agent = infrarely.agent(args.agent)
         vm.save(agent, tag=args.tag, description=args.description or "")
@@ -911,6 +909,37 @@ def cmd_benchmark(args):
             print()
 
 
+def cmd_replay(args):
+    """Replay a saved agent run."""
+    from infrarely.core.replay import replay as do_replay
+
+    result = do_replay(args.run_id)
+    print(f"\nReplaying run: {args.run_id}")
+    print(f"Original input: {result.get('original_input')}")
+    print(f"Tool calls: {result.get('tool_calls_replayed', 0)}")
+    for tc in result.get("replay_calls", []):
+        depth = tc.get("depth", 0)
+        tool = tc.get("tool", "")
+        output = str(tc.get("output", ""))[:80]
+        print(f"  [{depth}] {tool} → {output}")
+    print(f"Original output: {result.get('original_output')}\n")
+
+
+def cmd_runs(args):
+    """List recent agent runs."""
+    from infrarely.core.replay import list_runs as do_list
+
+    runs = do_list(limit=args.limit)
+    if not runs:
+        print(f"\n  {DIM}No saved runs found.{RESET}\n")
+        return
+
+    for run in runs:
+        print(
+            f"{run.get('run_id')} | {run.get('saved_at')} | tools:{run.get('tool_calls')} | {run.get('input')}"
+        )
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -930,7 +959,9 @@ Examples:
   infrarely metrics --json                  Metrics as JSON
   infrarely traces --limit 20               Recent traces
   infrarely agents                          List agents
-  infrarely logs --level ERROR              Show error logs
+    infrarely logs --level ERROR              Show error logs
+    infrarely replay <run_id>                 Replay a saved run
+    infrarely runs                            List recent saved runs
   infrarely info                            SDK info
   infrarely test                            Run test suite
   aos                                 Interactive REPL
@@ -1071,6 +1102,14 @@ Examples:
     p_bench.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     p_bench.add_argument("--no-color", action="store_true", help="Disable color output")
 
+    # replay
+    p_replay = sub.add_parser("replay", help="Replay a saved agent run")
+    p_replay.add_argument("run_id", help="Run ID to replay")
+
+    # runs
+    p_runs = sub.add_parser("runs", help="List recent saved runs")
+    p_runs.add_argument("--limit", "-n", type=int, default=20, help="Max runs")
+
     args = parser.parse_args()
 
     # Suppress file logging for CLI unless configured
@@ -1114,6 +1153,10 @@ Examples:
         cmd_marketplace(args)
     elif args.command == "benchmark":
         cmd_benchmark(args)
+    elif args.command == "replay":
+        cmd_replay(args)
+    elif args.command == "runs":
+        cmd_runs(args)
     else:
         # No subcommand → interactive REPL
         cmd_repl(args)

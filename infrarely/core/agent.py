@@ -32,6 +32,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, TYPE_CHECKING
 
 from infrarely.core.config import get_config, _ensure_configured, configure
 from infrarely.core.result import Result, Error, ErrorType, _ok, _fail
+from infrarely.core.run_store import RunStore
 from infrarely.memory.memory import AgentMemory
 from infrarely.memory.knowledge import KnowledgeManager, get_knowledge_manager
 from infrarely.core.decorators import (
@@ -86,7 +87,6 @@ from infrarely.platform.acp import (
 )
 from infrarely.runtime.paths import MEMORY_DB, TRACES_DB
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # GLOBAL AGENT REGISTRY — tracks all live agents via weak references
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -94,6 +94,7 @@ from infrarely.runtime.paths import MEMORY_DB, TRACES_DB
 _MAX_REGISTRY_SIZE = 1000  # hard cap — oldest evicted first
 _AGENTS: OrderedDict[str, weakref.ref] = OrderedDict()
 _AGENTS_LOCK = threading.Lock()
+_RUN_STORE = RunStore()
 
 
 def _register_agent(agent: "Agent") -> None:
@@ -404,23 +405,32 @@ class Agent:
             else:
                 print(result.errors[0].suggestion)
         """
+
+        def _return_result(res: Result) -> Result:
+            self._persist_run(goal, res)
+            return res
+
         if not self._alive:
-            return _fail(
-                ErrorType.STATE_CORRUPTED,
-                "Agent has been shut down",
-                goal=goal,
-                agent_name=self._name,
+            return _return_result(
+                _fail(
+                    ErrorType.STATE_CORRUPTED,
+                    "Agent has been shut down",
+                    goal=goal,
+                    agent_name=self._name,
+                )
             )
 
         # ── Always-on input sanitization (GAP 1) ─────────────────────────
         sanitizer = get_input_sanitizer()
         goal, san_result = sanitizer.sanitize(goal)
         if san_result.blocked:
-            return _fail(
-                ErrorType.SECURITY_VIOLATION,
-                f"Input blocked by sanitizer: {san_result.block_reason}",
-                goal="[blocked]",
-                agent_name=self._name,
+            return _return_result(
+                _fail(
+                    ErrorType.SECURITY_VIOLATION,
+                    f"Input blocked by sanitizer: {san_result.block_reason}",
+                    goal="[blocked]",
+                    agent_name=self._name,
+                )
             )
 
         # ── Security screening ────────────────────────────────────────────
@@ -429,11 +439,13 @@ class Agent:
                 goal, agent_name=self._name
             )
             if not allowed:
-                return _fail(
-                    ErrorType.SECURITY_VIOLATION,
-                    f"Input blocked by security policy: {detection.details if detection else 'blocked'}",
-                    goal=goal,
-                    agent_name=self._name,
+                return _return_result(
+                    _fail(
+                        ErrorType.SECURITY_VIOLATION,
+                        f"Input blocked by security policy: {detection.details if detection else 'blocked'}",
+                        goal=goal,
+                        agent_name=self._name,
+                    )
                 )
             if processed_text is not None and processed_text != goal:
                 goal = processed_text
@@ -514,7 +526,7 @@ class Agent:
                 except Exception:
                     pass  # never let self-heal crash the agent
 
-            return result
+            return _return_result(result)
 
         except Exception as e:
             # Should never reach here (engine catches all), but just in case
@@ -523,12 +535,47 @@ class Agent:
             self._logger.error(
                 f"Agent '{self._name}' unexpected error: {e}", agent=self._name
             )
-            return _fail(
-                ErrorType.UNKNOWN,
-                f"Unexpected error: {e}",
-                goal=goal,
-                agent_name=self._name,
+            return _return_result(
+                _fail(
+                    ErrorType.UNKNOWN,
+                    f"Unexpected error: {e}",
+                    goal=goal,
+                    agent_name=self._name,
+                )
             )
+
+    def _persist_run(self, goal: str, result: Result) -> None:
+        """Persist a compact run artifact for replay/debugging. Never raises."""
+        try:
+            run_id = str(result.trace_id or uuid.uuid4().hex)
+            trace = self.get_trace(run_id) if result.trace_id else None
+
+            tool_calls = []
+            if trace is not None and getattr(trace, "tool_calls", None):
+                for index, tc in enumerate(trace.tool_calls):
+                    tool_calls.append(
+                        {
+                            "index": index,
+                            "tool": getattr(tc, "tool_name", ""),
+                            "input": getattr(tc, "inputs", {}),
+                            "output": getattr(tc, "output_preview", ""),
+                            "depth": 0,
+                            "success": bool(getattr(tc, "success", True)),
+                        }
+                    )
+
+            payload = {
+                "run_id": run_id,
+                "input": goal,
+                "output": str(result.output),
+                "success": bool(result.success),
+                "tool_calls": tool_calls,
+                "execution_trace": trace.to_dict() if trace else {},
+            }
+            _RUN_STORE.save(run_id, payload)
+        except Exception:
+            # Run persistence is best-effort; never block normal execution.
+            pass
 
     # ═══════════════════════════════════════════════════════════════════
     # MULTI-AGENT: delegation, broadcast, messaging
