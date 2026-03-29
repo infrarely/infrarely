@@ -32,6 +32,14 @@ from infrarely.core.decorators import (
     CapabilityRegistry,
     get_capability_registry,
 )
+from infrarely.core.guardrails import (
+    GuardrailViolation,
+    build_tool_schema,
+    enforce_depth,
+    enforce_routing,
+    validate_tool_call,
+    verify_output,
+)
 from infrarely.runtime.workflow import Workflow, StepResult
 from infrarely.observability.observability import (
     ExecutionTrace,
@@ -44,7 +52,6 @@ from infrarely.observability.observability import (
     get_metrics,
     get_logger,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INTENT CLASSIFIER — deterministic first, LLM never for routing
@@ -586,6 +593,18 @@ def _call_llm(prompt: str, system: str = "", max_tokens: int = 512) -> Dict[str,
         return {"content": None, "error": str(e), "tokens": 0, "duration_ms": elapsed}
 
 
+def _guardrail_error_type(layer: str) -> ErrorType:
+    if layer == "ROUTING":
+        return ErrorType.PERMISSION_DENIED
+    if layer == "TOOL_VALIDATION":
+        return ErrorType.VALIDATION
+    if layer == "DEPTH_LIMIT":
+        return ErrorType.BUDGET_EXCEEDED
+    if layer == "OUTPUT_VERIFICATION":
+        return ErrorType.VERIFICATION_FAILED
+    return ErrorType.UNKNOWN
+
+
 def _call_openai(api_key, model, messages, max_tokens, temperature):
     import urllib.request
     import json as _json
@@ -829,11 +848,24 @@ class ExecutionEngine:
                     )
 
             # ── 3. Tool execution (deterministic routing) ─────────────────────
+            if intent["type"] == "tool":
+                run_id = trace.trace_id
+                enforce_routing(intent["name"], self._tools, trace, run_id=run_id)
+                max_depth = max(1, int(cfg.get("max_execution_depth", 8) or 8))
+                current_depth = len(trace.steps) + len(trace.tool_calls)
+                enforce_depth(current_depth, max_depth, trace, run_id=run_id)
+
             if intent["type"] == "tool" and intent["name"] in self._tools:
                 tool_fn = self._tools[intent["name"]]
                 tool_start = time.monotonic()
                 try:
                     params = intent.get("params", {})
+                    run_id = trace.trace_id
+
+                    tool_schema = build_tool_schema(tool_fn)
+                    validate_tool_call(
+                        intent["name"], params, tool_schema, trace, run_id=run_id
+                    )
 
                     # ── HITL gate check ──────────────────────────────────
                     if self._hitl_gate is not None:
@@ -893,6 +925,7 @@ class ExecutionEngine:
                         pass
 
                     tool_result = tool_fn(**params) if params else tool_fn()
+                    verify_output(tool_result, intent["name"], trace, run_id=run_id)
                     tool_elapsed = (time.monotonic() - tool_start) * 1000
 
                     trace.tool_calls.append(
@@ -914,13 +947,6 @@ class ExecutionEngine:
                     )
                     sources.append(intent["name"])
                     self._metrics.record_tool_call(intent["name"], tool_elapsed, True)
-
-                    # Check if tool returned an error
-                    if isinstance(tool_result, dict) and (
-                        tool_result.get("__infrarely_error")
-                        or tool_result.get("__aos_error")
-                    ):
-                        raise Exception(tool_result.get("message", "Tool failed"))
 
                     # If tool result is a complete answer, return directly
                     if self._is_complete_answer(tool_result, goal):
@@ -950,6 +976,8 @@ class ExecutionEngine:
                     # Tool result needs LLM synthesis — falls through
                     context_for_llm = tool_result
 
+                except GuardrailViolation:
+                    raise
                 except Exception as e:
                     tool_elapsed = (time.monotonic() - tool_start) * 1000
                     self._metrics.record_tool_call(intent["name"], tool_elapsed, False)
@@ -1214,6 +1242,27 @@ class ExecutionEngine:
                 trace_id=trace.trace_id,
             )
 
+        except GuardrailViolation as e:
+            elapsed = (time.monotonic() - start) * 1000
+            self._logger.warning(f"Guardrail violation blocked execution: {e}")
+            trace.success = False
+            trace.errors.append(str(e))
+            trace.completed_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            trace.duration_ms = elapsed
+            try:
+                self._trace_store.save(trace)
+            except Exception:
+                pass
+            self._metrics.record_task(False, used_llm, elapsed)
+            return _fail(
+                _guardrail_error_type(e.layer),
+                f"[{e.guardrail_id}] {e.reason} Fix: {e.fix}",
+                step=e.layer,
+                goal=goal,
+                agent_name=self._agent_name,
+                duration_ms=elapsed,
+                trace_id=trace.trace_id,
+            )
         except Exception as e:
             elapsed = (time.monotonic() - start) * 1000
             self._logger.error(f"Execution failed: {e}")

@@ -102,6 +102,8 @@ __all__ = [
     "Result",
     "Error",
     "ErrorType",
+    "GuardrailViolation",
+    "guardrail_registry",
     # Knowledge
     "knowledge",
     # Memory
@@ -261,6 +263,7 @@ __all__ = [
 
 # ─── Result & Error types ────────────────────────────────────────────────────
 from infrarely.core.result import Result, Error, ErrorType
+from infrarely.core.guardrails import GuardrailViolation, REGISTRY as guardrail_registry
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 from infrarely.core.config import configure, get_config
@@ -531,7 +534,6 @@ from infrarely.core.agent import Agent, agent, shutdown as _shutdown_fn
 
 # ─── Dashboard ────────────────────────────────────────────────────────────────
 from infrarely.observability.dashboard import Dashboard as _DashboardClass
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MODULE-LEVEL CONVENIENCE ACCESSORS
